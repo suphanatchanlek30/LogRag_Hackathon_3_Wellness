@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Mitr } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/navbar/bottom-nav";
+import Sidebar from "@/components/sidebar/sidebar";
+import MainWrapper from "@/components/layout/main-wrapper";
 
 const mitr = Mitr({
   variable: "--font-mitr",
@@ -24,8 +26,11 @@ export default function RootLayout({
       lang="th"
       className={`${mitr.variable} h-full antialiased font-sans`}
     >
-      <body className="min-h-full flex flex-col font-sans">
-        {children}
+      <body className="min-h-full flex flex-col font-sans bg-white text-slate-800">
+        <Sidebar />
+        <MainWrapper>
+          {children}
+        </MainWrapper>
         <BottomNav />
       </body>
     </html>
