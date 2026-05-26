@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 export default function HomePage() {
@@ -56,7 +57,7 @@ export default function HomePage() {
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.02)_25%,rgba(163,230,53,0.04)_60%,rgba(22,163,74,0.08)_100%)]" />
 
-                <div className="absolute left-1/2 top-[54%] w-[64%] -translate-x-1/2 -translate-y-1/2">
+                <Link href="/main" className="absolute left-1/2 top-[54%] w-[64%] -translate-x-1/2 -translate-y-1/2 block transition-transform hover:scale-105 active:scale-95 cursor-pointer">
                   <Image
                     src="/mainpage/image/left.png"
                     alt="โซนบก"
@@ -65,7 +66,7 @@ export default function HomePage() {
                     priority
                     className="h-auto w-full object-contain drop-shadow-[0_10px_18px_rgba(255,255,255,0.35)]"
                   />
-                </div>
+                </Link>
               </section>
 
               <section className="relative w-1/2 overflow-hidden">
