@@ -12,7 +12,7 @@ export default function BottomNav() {
 
   const navItems = [
     { name: "หน้าหลัก", href: "/main", icon: HiHome },
-    { name: "กระเป๋า", href: "/bag", icon: HiOutlineShoppingBag },
+    { name: "โซนบก", href: "/land", icon: HiOutlineShoppingBag },
     { name: "ภารกิจ", href: "/quests", icon: HiOutlineClipboardCheck },
     { name: "ตั้งค่า", href: "/settings", icon: HiOutlineCog },
   ];
