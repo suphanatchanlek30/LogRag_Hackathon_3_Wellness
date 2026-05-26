@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Mitr } from "next/font/google";
 import "./globals.css";
+import BottomNav from "@/components/navbar/bottom-nav";
 
 const mitr = Mitr({
   variable: "--font-mitr",
@@ -23,7 +24,10 @@ export default function RootLayout({
       lang="th"
       className={`${mitr.variable} h-full antialiased font-sans`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        <BottomNav />
+      </body>
     </html>
   );
 }
