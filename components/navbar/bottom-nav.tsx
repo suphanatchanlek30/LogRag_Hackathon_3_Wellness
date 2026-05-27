@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiHome, HiOutlineShoppingBag, HiOutlineClipboardCheck, HiOutlineCog } from "react-icons/hi";
+import { MdAutoGraph } from "react-icons/md";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -11,7 +12,7 @@ export default function BottomNav() {
   if (pathname === "/") return null;
 
   const navItems = [
-    { name: "หน้าหลัก", href: "/main", icon: HiHome },
+    { name: "แดชบอร์ด", href: "/main", icon: MdAutoGraph },
     { name: "โซนบก", href: "/land", icon: HiOutlineShoppingBag },
     { name: "ภารกิจ", href: "/quests", icon: HiOutlineClipboardCheck },
     { name: "ตั้งค่า", href: "/settings", icon: HiOutlineCog },

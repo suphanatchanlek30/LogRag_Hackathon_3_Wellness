@@ -10,6 +10,7 @@ import {
   HiOutlineCog 
 } from "react-icons/hi";
 import { FaTree, FaWater, FaSeedling } from "react-icons/fa";
+import { MdAutoGraph } from "react-icons/md";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -18,7 +19,7 @@ export default function Sidebar() {
   if (pathname === "/") return null;
 
   const navItems = [
-    { name: "หน้าหลัก", href: "/main", icon: HiHome },
+    { name: "แดชบอร์ด", href: "/main", icon: MdAutoGraph },
     { name: "โซนบก", href: "/land", icon: FaTree, iconColor: "text-amber-700" },
     { name: "โซนน้ำ", href: "#", icon: FaWater, iconColor: "text-sky-500", badge: "เร็วๆ นี้" },
     { name: "ภารกิจ", href: "/quests", icon: HiOutlineClipboardCheck },
