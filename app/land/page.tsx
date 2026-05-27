@@ -123,7 +123,7 @@ export default function Land() {
           </div>
         </section>
 
-        <section className="grid grid-cols-[minmax(0,1fr)_18px_minmax(0,1fr)_18px_minmax(0,1fr)] items-center gap-1.5 sm:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)_24px_minmax(0,1fr)] sm:gap-2 md:gap-3">
+        <section className="grid grid-cols-[minmax(0,1fr)_12px_minmax(0,1fr)_12px_minmax(0,1fr)] items-stretch gap-2 sm:grid-cols-[minmax(0,1fr)_22px_minmax(0,1fr)_22px_minmax(0,1fr)] sm:gap-3 md:gap-4">
           <ActionCard
             title="รับอาหาร"
             button="เก็บ"
@@ -260,33 +260,37 @@ function ActionCard({
   onClick: () => void;
 }) {
   return (
-    <article className="min-h-[126px] rounded-[18px] border border-slate-100 bg-white p-2 text-center shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:min-h-[140px] sm:rounded-[20px] sm:p-3">
-      <h2 className="min-h-8 text-xs font-medium leading-tight text-[#48a62c] sm:text-sm">{title}</h2>
-      <div className="my-1 grid h-14 place-items-center sm:my-2">{children}</div>
-      <button
-        type="button"
-        onClick={onClick}
-        className="h-8 w-full max-w-24 rounded-full bg-[#58b43c] px-2 text-xs font-medium text-white shadow-[0_8px_14px_rgba(72,166,44,0.22)] transition active:scale-95 sm:px-4 sm:text-sm"
-      >
-        {button}
-      </button>
-      {hint && <p className="mt-1 text-[11px] font-medium text-[#58b43c]">{hint}</p>}
+    <article className="h-[162px] rounded-[16px] border border-slate-100 bg-white px-2 py-2.5 text-center shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:h-[186px] sm:rounded-[20px] sm:px-4 sm:py-3.5">
+      <div className="flex h-full flex-col items-center">
+        <h2 className="text-[11px] font-medium leading-tight text-[#48a62c] sm:text-sm">{title}</h2>
+        <div className="mt-1.5 grid h-12 place-items-center sm:mt-3 sm:h-16">{children}</div>
+        <div className="mt-auto flex flex-col items-center">
+          <button
+            type="button"
+            onClick={onClick}
+            className="h-8 w-full max-w-[78px] rounded-full bg-[#58b43c] px-2 text-[12px] font-semibold text-white shadow-[0_8px_14px_rgba(72,166,44,0.22)] transition active:scale-95 sm:h-10 sm:max-w-[112px] sm:px-3 sm:text-sm"
+          >
+            {button}
+          </button>
+          {hint && <p className="mt-1 text-[10px] font-medium text-[#58b43c] sm:mt-1.5 sm:text-[11px]">{hint}</p>}
+        </div>
+      </div>
     </article>
   );
 }
 
 function BasketCard({ count }: { count: number }) {
   return (
-    <article className="relative min-h-[126px] rounded-[18px] border border-slate-100 bg-white p-2 text-center shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:min-h-[140px] sm:rounded-[20px] sm:p-3">
-      <h2 className="min-h-8 text-xs font-medium leading-tight text-[#48a62c] sm:text-sm">แครอทของฉัน</h2>
-      <div className="my-1 grid h-20 place-items-center sm:my-2">
+    <article className="relative h-[162px] rounded-[16px] border border-slate-100 bg-white px-2 py-2.5 text-center shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:h-[186px] sm:rounded-[20px] sm:px-4 sm:py-3.5">
+      <h2 className="text-[11px] font-medium leading-tight text-[#48a62c] sm:text-sm">แครอทของฉัน</h2>
+      <div className="mt-1.5 grid h-14 place-items-center sm:mt-3 sm:h-20">
         <AssetImage
           src="/mainpage/image/allCarrot.png"
           alt="ตะกร้าแครอท"
-          className="h-16 w-20 sm:h-20 sm:w-24"
+          className="h-12 w-16 sm:h-18 sm:w-24"
         />
       </div>
-      <span className="absolute bottom-4 right-4 grid h-7 min-w-7 place-items-center rounded-full bg-[#58b43c] px-2 text-sm font-medium text-white sm:bottom-5 sm:right-5">
+      <span className="absolute bottom-3 right-3 grid h-7 min-w-7 place-items-center rounded-full bg-[#58b43c] px-2 text-xs font-medium text-white sm:bottom-4 sm:right-4 sm:h-8 sm:min-w-8 sm:text-sm">
         {count}
       </span>
     </article>
@@ -311,7 +315,7 @@ function AssetImage({
 
 function StepArrow() {
   return (
-    <div className="grid h-9 w-4 place-items-center text-xl font-medium text-[#56b43a] sm:w-6 sm:text-2xl">
+    <div className="grid h-full min-h-[162px] place-items-center text-xl font-semibold leading-none text-[#56b43a] sm:min-h-[186px] sm:text-3xl">
       &gt;
     </div>
   );
