@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ดูแลเพื่อนน้อย (My Hack 3)
 
-## Getting Started
+เว็บแอปแนวเกมเลี้ยงเพื่อนน้อย (Virtual Pet) สร้างด้วย Next.js App Router
+ผู้เล่นสามารถเลือกโซน, เก็บแครอท, ให้อาหารน้องกระต่าย และติดตามการเติบโตตามจำนวนวันที่ดูแลต่อเนื่อง
 
-First, run the development server:
+## Tech Stack
+
+- Next.js `16.2.6` (App Router)
+- React `19.2.4`
+- TypeScript
+- Tailwind CSS `v4`
+- React Icons
+
+## Features หลัก
+
+- หน้า Landing สำหรับเลือกโซนการเล่น
+- โซนบก (`/land`) พร้อมระบบ:
+  - เก็บแครอทแบบขั้น (`carrot1 -> carrot6 -> +1 แครอท`)
+  - ให้อาหารน้องกระต่ายเพื่อลดแครอทและเพิ่มพลังงาน
+  - เปลี่ยน mood ของน้องตามสถานะ (ปกติ/สดใส/หิว/ตื่นเต้น)
+  - ระบบการเติบโตตามวัน (1, 7, 30, 90 วัน)
+  - ปลดล็อกรางวัลการเติบโต (บ้าน, ชุด, Secret)
+- Responsive navigation:
+  - `Sidebar` สำหรับ desktop
+  - `BottomNav` สำหรับ mobile
+
+## Route ที่มีในปัจจุบัน
+
+- `/` หน้าเลือกโซน (Landing)
+- `/land` โซนบก (ฟีเจอร์หลัก)
+- `/main` หน้า placeholder (ยังไม่ได้เชื่อมฟีเจอร์จริง)
+
+หมายเหตุ: เมนูบางรายการใน Navbar/Sidebar (`/quests`, `/settings`, `/bag`, `/growth`) ยังไม่มีหน้าจริงใน `app/` และจะได้ 404 จนกว่าจะสร้าง route เหล่านี้
+
+## โครงสร้างโปรเจกต์
+
+```txt
+app/
+  layout.tsx            # Root layout + Sidebar + MainWrapper + BottomNav
+  page.tsx              # หน้าแรก
+  land/page.tsx         # หน้าโซนบก (เกมหลัก)
+  main/page.tsx         # หน้า main (placeholder)
+  globals.css           # Global styles + keyframes
+
+components/
+  home-componenets/
+    home-page.tsx       # Landing UI + video split zone
+  layout/
+    main-wrapper.tsx    # จัดระยะเมื่อมี Sidebar
+  navbar/
+    bottom-nav.tsx      # Mobile bottom navigation
+  sidebar/
+    sidebar.tsx         # Desktop sidebar
+
+public/mainpage/
+  image/                # sprite และภาพประกอบ
+  video/                # วิดีโอพื้นหลัง
+```
+
+## การเริ่มต้นใช้งาน
+
+ติดตั้ง dependencies:
+
+```bash
+npm install
+```
+
+รันโหมดพัฒนา:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+เปิดที่:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+- `npm run dev` รัน development server
+- `npm run build` สร้าง production build
+- `npm run start` รัน production server
+- `npm run lint` ตรวจ lint
 
-To learn more about Next.js, take a look at the following resources:
+## หมายเหตุสำหรับผู้พัฒนา
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+โปรเจกต์นี้ใช้ Next.js เวอร์ชันใหม่ที่มี breaking changes
+ก่อนแก้โค้ดที่เกี่ยวกับโครงสร้างหรือ API ของ Next.js ควรอ้างอิงเอกสารใน:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `node_modules/next/dist/docs/`
 
-## Deploy on Vercel
+## แนวทางพัฒนาต่อ
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- เพิ่ม route ที่ยังขาด (`/quests`, `/settings`, `/bag`, `/growth`)
+- แยก state เกมออกจาก component เดียวไปเป็น store/hook
+- persist progress ของผู้เล่น (localStorage หรือ backend)
+- เพิ่มระบบโซนน้ำให้ใช้งานได้จริง
+- เพิ่ม test สำหรับ logic การเติบโตและการคำนวณรางวัล

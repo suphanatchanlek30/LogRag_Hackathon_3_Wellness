@@ -64,22 +64,8 @@ export default function Land() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-3rem)] bg-[#fbfdf7] px-3 pb-24 pt-2 text-[#315827] sm:px-5 md:rounded-[32px] md:bg-white md:px-6 md:py-5 md:shadow-[0_18px_48px_rgba(22,101,52,0.08)] lg:px-8">
+    <main className="min-h-[calc(100vh-3rem)] bg-white px-3 pb-24 pt-2 text-[#315827] sm:px-5 md:px-6 md:py-5 lg:px-8">
       <div className="mx-auto w-full max-w-[470px] space-y-3 md:max-w-[760px] xl:max-w-[900px]">
-        <header className="grid grid-cols-[44px_1fr_76px] items-center gap-3 px-1">
-          <button
-            type="button"
-            aria-label="ย้อนกลับ"
-            className="grid h-11 w-11 place-items-center rounded-full border border-slate-200 bg-white text-2xl leading-none text-slate-500 shadow-[0_5px_16px_rgba(15,23,42,0.08)]"
-          >
-            ‹
-          </button>
-          <div className="text-center">
-            <div className="mx-auto mb-0.5 h-5 w-5 rounded-full bg-[#75cf42]" />
-            <h1 className="text-xl font-bold text-slate-700">โซนบก</h1>
-          </div>
-        </header>
-
         <section className="relative h-[278px] overflow-hidden rounded-[28px] border border-white bg-[#9be0ff] shadow-[0_16px_34px_rgba(34,139,78,0.18)] sm:h-[340px] md:h-[390px] lg:h-[420px]">
           <Image
             src="/mainpage/image/bg.png"
@@ -94,9 +80,9 @@ export default function Land() {
             <div className="mb-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <HiLightningBolt className="h-5 w-5 text-[#f4b52a]" />
-                <span className="text-sm font-bold text-slate-700">พลังงาน</span>
+                <span className="text-sm font-medium text-slate-700">พลังงาน</span>
               </div>
-              <span className="text-sm font-bold text-slate-600">{energy} / 100</span>
+              <span className="text-sm font-medium text-slate-600">{energy} / 100</span>
             </div>
             <div className="h-3 overflow-hidden rounded-full bg-slate-100">
               <div
@@ -123,7 +109,7 @@ export default function Land() {
           </div>
 
           {fedMessage && (
-            <div className="absolute bottom-14 right-4 z-30 rounded-[18px] bg-white px-4 py-3 text-sm font-bold text-[#45a82c] shadow-[0_12px_26px_rgba(22,101,52,0.2)]">
+            <div className="absolute bottom-14 right-4 z-30 rounded-[18px] bg-white px-4 py-3 text-sm font-medium text-[#45a82c] shadow-[0_12px_26px_rgba(22,101,52,0.2)]">
               <div className="flex items-center gap-2">
                 <HiHeart className="h-5 w-5 text-[#ff8cab]" />
                 ให้อาหารแล้ว
@@ -132,7 +118,7 @@ export default function Land() {
             </div>
           )}
 
-          <div className="absolute bottom-4 left-4 z-20 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-[#4c7c3d] shadow-sm">
+          <div className="absolute bottom-4 left-4 z-20 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-[#4c7c3d] shadow-sm">
             อารมณ์: {moodLabel[mood]}
           </div>
         </section>
@@ -165,12 +151,12 @@ export default function Land() {
         <section className="rounded-[24px] border border-slate-100 bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.07)] sm:p-4">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div>
-              <p className="text-base font-bold text-[#48a62c]">การเติบโตของน้อง</p>
+              <p className="text-base font-medium text-[#48a62c]">การเติบโตของน้อง</p>
               <p className="text-xs text-slate-500">
                 เล่นต่อเนื่อง {careDays} วัน • rabbit{rabbitLevel}
               </p>
             </div>
-            <div className="rounded-full bg-[#eaf8e5] px-3 py-1 text-xs font-bold text-[#45a82c]">
+            <div className="rounded-full bg-[#eaf8e5] px-3 py-1 text-xs font-medium text-[#45a82c]">
               {nextRewardLabel(careDays)}
             </div>
           </div>
@@ -193,10 +179,10 @@ export default function Land() {
                     <RewardVisual day={item.day} />
                   </div>
                   <p className="mt-2 text-[11px] font-medium text-slate-500">{item.title}</p>
-                  <p className="text-xs font-bold text-[#315b25]">{item.reward}</p>
+                  <p className="text-xs font-medium text-[#315b25]">{item.reward}</p>
                   <p className="mt-0.5 text-[10px] text-slate-400">{item.caption}</p>
                   {unlocked && (
-                    <span className="mx-auto mt-2 grid h-5 w-5 place-items-center rounded-full bg-[#50b82e] text-xs font-bold text-white">
+                    <span className="mx-auto mt-2 grid h-5 w-5 place-items-center rounded-full bg-[#50b82e] text-xs font-medium text-white">
                       ✓
                     </span>
                   )}
@@ -275,12 +261,12 @@ function ActionCard({
 }) {
   return (
     <article className="min-h-[126px] rounded-[18px] border border-slate-100 bg-white p-2 text-center shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:min-h-[140px] sm:rounded-[20px] sm:p-3">
-      <h2 className="min-h-8 text-xs font-bold leading-tight text-[#48a62c] sm:text-sm">{title}</h2>
+      <h2 className="min-h-8 text-xs font-medium leading-tight text-[#48a62c] sm:text-sm">{title}</h2>
       <div className="my-1 grid h-14 place-items-center sm:my-2">{children}</div>
       <button
         type="button"
         onClick={onClick}
-        className="h-8 w-full max-w-24 rounded-full bg-[#58b43c] px-2 text-xs font-bold text-white shadow-[0_8px_14px_rgba(72,166,44,0.22)] transition active:scale-95 sm:px-4 sm:text-sm"
+        className="h-8 w-full max-w-24 rounded-full bg-[#58b43c] px-2 text-xs font-medium text-white shadow-[0_8px_14px_rgba(72,166,44,0.22)] transition active:scale-95 sm:px-4 sm:text-sm"
       >
         {button}
       </button>
@@ -292,7 +278,7 @@ function ActionCard({
 function BasketCard({ count }: { count: number }) {
   return (
     <article className="relative min-h-[126px] rounded-[18px] border border-slate-100 bg-white p-2 text-center shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:min-h-[140px] sm:rounded-[20px] sm:p-3">
-      <h2 className="min-h-8 text-xs font-bold leading-tight text-[#48a62c] sm:text-sm">แครอทของฉัน</h2>
+      <h2 className="min-h-8 text-xs font-medium leading-tight text-[#48a62c] sm:text-sm">แครอทของฉัน</h2>
       <div className="my-1 grid h-20 place-items-center sm:my-2">
         <AssetImage
           src="/mainpage/image/allCarrot.png"
@@ -300,7 +286,7 @@ function BasketCard({ count }: { count: number }) {
           className="h-16 w-20 sm:h-20 sm:w-24"
         />
       </div>
-      <span className="absolute bottom-4 right-4 grid h-7 min-w-7 place-items-center rounded-full bg-[#58b43c] px-2 text-sm font-bold text-white sm:bottom-5 sm:right-5">
+      <span className="absolute bottom-4 right-4 grid h-7 min-w-7 place-items-center rounded-full bg-[#58b43c] px-2 text-sm font-medium text-white sm:bottom-5 sm:right-5">
         {count}
       </span>
     </article>
@@ -325,7 +311,7 @@ function AssetImage({
 
 function StepArrow() {
   return (
-    <div className="grid h-9 w-4 place-items-center text-xl font-bold text-[#56b43a] sm:w-6 sm:text-2xl">
+    <div className="grid h-9 w-4 place-items-center text-xl font-medium text-[#56b43a] sm:w-6 sm:text-2xl">
       &gt;
     </div>
   );
