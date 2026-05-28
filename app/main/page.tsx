@@ -1,7 +1,13 @@
-import HomePage from "@/components/home-componenets/home-page";
+import FocusLockPanel from "@/components/focus/focus-lock-panel";
 
-export default function Home() {
+export default function MainPage() {
   return (
-    <div>Test</div>
+    <section className="relative min-h-screen bg-white px-2 py-4 sm:px-4 sm:py-6">
+      <FocusLockPanel />
+      <h1 className="text-2xl font-medium tracking-tight text-slate-800">Dashboard</h1>
+      <p className="mt-2 max-w-2xl text-base font-normal text-slate-600">
+        หน้า mock สำหรับทดสอบโหมด Focus: กดปุ่มมุมขวาบนเพื่อเริ่มนับถอยหลังและล็อกหน้าจอ
+      </p>
+    </section>
   );
 }
