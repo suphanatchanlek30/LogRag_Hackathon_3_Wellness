@@ -53,7 +53,7 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
           </p>
           <h2 className="mt-1 text-lg font-semibold text-slate-900">UNO Q Live Stream</h2>
           <p className="mt-1 text-sm text-slate-500">
-            เชื่อม BLE กับอุปกรณ์แล้วส่ง reading ต่อไปที่ `/api/device/readings`
+            เชื่อม BLE กับอุปกรณ์เพื่อรับข้อมูลแบบเรียลไทม์
           </p>
         </div>
 
@@ -91,7 +91,11 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
         <InfoCard label="Device" value={deviceName || "UNOQ-LogRag"} />
         <InfoCard
           label="Latest Focus"
-          value={latestReading ? `${latestReading.focus.score}/100` : "-"}
+          value={
+            latestReading && typeof latestReading.focus?.score === "number"
+              ? `${latestReading.focus.score}/100`
+              : "-"
+          }
         />
       </div>
 
@@ -111,6 +115,7 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
         </p>
       ) : null}
 
+      {/* Keep payload preview hidden for cleaner connect-only UX.
       <div className="mt-4 rounded-[18px] border border-slate-100 bg-white/90 p-3">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-800">Latest Reading</p>
@@ -122,6 +127,7 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
           {latestReading ? JSON.stringify(latestReading, null, 2) : "ยังไม่มีข้อมูลจาก BLE"}
         </pre>
       </div>
+      */}
     </section>
   );
 }

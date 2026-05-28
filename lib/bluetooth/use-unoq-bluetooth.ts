@@ -33,6 +33,7 @@ export function useUnoQBluetooth(): BluetoothState {
   const decoderRef = useRef<TextDecoder | null>(null);
   const encoderRef = useRef<TextEncoder | null>(null);
   const notificationHandlerRef = useRef<((event: Event) => void) | null>(null);
+  const isDisconnectingRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -92,7 +93,10 @@ export function useUnoQBluetooth(): BluetoothState {
           if (!trimmed) continue;
 
           try {
-            const reading = JSON.parse(trimmed) as DeviceReadingPayload;
+            const reading = JSON.parse(trimmed) as Partial<DeviceReadingPayload>;
+            if (!isDeviceReadingPayload(reading)) {
+              throw new Error("BLE payload shape ไม่ถูกต้อง");
+            }
             setLatestReading(reading);
             await postDeviceReading(reading);
             setError("");
@@ -105,21 +109,21 @@ export function useUnoQBluetooth(): BluetoothState {
       notificationHandlerRef.current = notificationHandler;
       txCharacteristic.addEventListener("characteristicvaluechanged", notificationHandler);
       await txCharacteristic.startNotifications();
+      await sendCommand({ type: "start" });
 
       setDeviceName(device.name ?? "UNOQ Device");
       setIsConnected(true);
       setIsSupported(true);
     } catch (connectError) {
       cleanupConnectionState(true);
-      const message =
-        connectError instanceof Error ? connectError.message : "เชื่อมต่อ Bluetooth ไม่สำเร็จ";
+      const message = toBluetoothErrorMessage(connectError);
       setError(message);
-      throw connectError;
+      throw new Error(message);
     }
   }
 
   function disconnect() {
-    cleanupConnectionState(true);
+    void disconnectInternal();
   }
 
   async function sendCommand(command: unknown) {
@@ -136,7 +140,24 @@ export function useUnoQBluetooth(): BluetoothState {
   }
 
   function handleDisconnected() {
+    if (isDisconnectingRef.current) {
+      isDisconnectingRef.current = false;
+    }
     cleanupConnectionState(false);
+  }
+
+  async function disconnectInternal() {
+    isDisconnectingRef.current = true;
+    try {
+      if (rxCharacteristicRef.current) {
+        await sendCommand({ type: "stop" });
+      }
+    } catch {
+      // Ignore stop errors during teardown.
+    } finally {
+      cleanupConnectionState(true);
+      isDisconnectingRef.current = false;
+    }
   }
 
   function cleanupConnectionState(disconnectGatt: boolean) {
@@ -173,4 +194,31 @@ export function useUnoQBluetooth(): BluetoothState {
     disconnect,
     sendCommand,
   };
+}
+
+function toBluetoothErrorMessage(error: unknown) {
+  const fallback = "เชื่อมต่อ Bluetooth ไม่สำเร็จ";
+  if (!(error instanceof Error)) return fallback;
+
+  if (error.message.includes(RX_UUID)) {
+    return `ไม่พบ RX characteristic (${RX_UUID}) ใน service ${SERVICE_UUID}. ตรวจ firmware ของ UNO Q ว่ามี write characteristic UUID นี้จริง`;
+  }
+  if (error.message.includes(TX_UUID)) {
+    return `ไม่พบ TX characteristic (${TX_UUID}) ใน service ${SERVICE_UUID}. ตรวจ firmware ของ UNO Q ว่ามี notify characteristic UUID นี้จริง`;
+  }
+
+  return error.message || fallback;
+}
+
+function isDeviceReadingPayload(value: Partial<DeviceReadingPayload>): value is DeviceReadingPayload {
+  return Boolean(
+    value &&
+      typeof value.device_code === "string" &&
+      typeof value.recorded_at === "string" &&
+      value.focus &&
+      typeof value.focus.score === "number" &&
+      typeof value.focus.state === "string" &&
+      value.emotion &&
+      typeof value.emotion.label === "string"
+  );
 }

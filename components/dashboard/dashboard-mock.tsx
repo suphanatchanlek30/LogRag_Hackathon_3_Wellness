@@ -11,17 +11,6 @@ const PRESET_MINUTES = [15, 25, 45, 60];
 
 const chartPoints = [34, 46, 70, 25, 75, 86, 42, 63, 72, 28, 81, 70, 30, 50, 61, 44, 37, 61];
 const chartTimes = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00"];
-const timeline = [
-  { state: "focus", icon: "🥕" },
-  { state: "short_break", icon: "🍃" },
-  { state: "focus", icon: "🥕" },
-  { state: "short_break", icon: "🍃" },
-  { state: "focus", icon: "🥕" },
-  { state: "short_break", icon: "🍃" },
-  { state: "focus", icon: "🥕" },
-  { state: "long_rest", icon: "☀️" },
-];
-
 const emotionLegend = [
   { key: "happy", label: "สนุก", note: "กระตือรือร้น มีความสุข", color: "#f9be16", image: "/dashboard/Fun.png" },
   { key: "relaxed", label: "ผ่อนคลาย", note: "นิ่ง สบายใจ", color: "#27b14b", image: "/dashboard/Relaxed.png" },
@@ -37,6 +26,7 @@ export default function DashboardMock() {
   const [selectedMin, setSelectedMin] = useState(25);
   const [lastSource, setLastSource] = useState<FocusSource>("manual");
   const [latestDeviceReading, setLatestDeviceReading] = useState<DeviceReadingPayload | null>(null);
+  const [focusScoreHistory, setFocusScoreHistory] = useState<number[]>(chartPoints);
 
   useEffect(() => {
     if (!isLocked || remainingSec <= 0) return;
@@ -54,6 +44,12 @@ export default function DashboardMock() {
 
     return () => window.clearInterval(timer);
   }, [isLocked, remainingSec]);
+
+  useEffect(() => {
+    const score = latestDeviceReading?.focus?.score;
+    if (typeof score !== "number") return;
+    setFocusScoreHistory((prev) => [...prev.slice(-17), score]);
+  }, [latestDeviceReading]);
 
   const minutes = Math.floor(remainingSec / 60)
     .toString()
@@ -96,35 +92,38 @@ export default function DashboardMock() {
 
           <div className="grid gap-3 lg:gap-5 grid-cols-1 lg:grid-cols-3">
             <div className="space-y-3 lg:space-y-4 lg:col-span-2">
-              <FocusScoreSection />
+              <FocusScoreSection
+                latestDeviceReading={latestDeviceReading}
+                focusScores={focusScoreHistory}
+              />
               <BluetoothPanel onLatestReading={setLatestDeviceReading} />
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <MetricCard
                   icon="/dashboard/sessions_today.png"
-                  title="Sessions Today"
-                  value="5"
-                  unit="รอบ"
+                  title="Motion Level"
+                  value={formatDecimal(latestDeviceReading?.sensors?.motion_level, 3)}
+                  unit=""
                   accent="green"
-                  footer="เพิ่มขึ้น 2 จากเมื่อวาน"
+                  footer={`Touch ${latestDeviceReading?.sensors?.touch_count ?? "-"} ครั้ง`}
                 />
                 <MetricCard
                   icon="/dashboard/focus_time.png"
-                  title="Focus Time"
-                  value="2 ชม. 05"
-                  unit="นาที"
+                  title="Focus Probability"
+                  value={formatPercent(latestDeviceReading?.focus?.probability)}
+                  unit="%"
                   accent="red"
-                  footer="เป้าหมาย 3 ชม."
-                  progress={69}
+                  footer={`model: ${latestDeviceReading?.focus?.model_version ?? "-"}`}
+                  progress={toProgress(latestDeviceReading?.focus?.probability)}
                 />
                 <MetricCard
                   icon="/dashboard/break_time.png"
-                  title="Break Time"
-                  value="45"
-                  unit="นาที"
+                  title="Distraction"
+                  value={formatPercent(latestDeviceReading?.focus?.distraction_probability)}
+                  unit="%"
                   accent="green"
-                  footer="เหมาะสม"
-                  progress={83}
+                  footer={`confidence: ${formatPercent(latestDeviceReading?.focus?.confidence)}%`}
+                  progress={toProgress(latestDeviceReading?.focus?.distraction_probability)}
                 />
                 <MetricCard
                   icon="/dashboard/current_state.png"
@@ -309,12 +308,18 @@ function StartFocusCard({
   );
 }
 
-function FocusScoreSection() {
+function FocusScoreSection({
+  latestDeviceReading,
+  focusScores,
+}: {
+  latestDeviceReading: DeviceReadingPayload | null;
+  focusScores: number[];
+}) {
   const width = 720;
   const height = 300;
   const padding = 34;
-  const stepX = (width - padding * 2) / (chartPoints.length - 1);
-  const points = chartPoints.map((value, index) => {
+  const stepX = (width - padding * 2) / (focusScores.length - 1);
+  const points = focusScores.map((value, index) => {
     const x = padding + index * stepX;
     const y = height - padding - (value / 100) * (height - padding * 2);
     return { x, y, value };
@@ -334,7 +339,7 @@ function FocusScoreSection() {
           </div>
         </div>
         <div className="rounded-full border border-emerald-100 bg-emerald-50 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold text-[#28bf41] whitespace-nowrap">
-          ↗ AVG 72
+          ↗ AVG {Math.round(focusScores.reduce((acc, cur) => acc + cur, 0) / focusScores.length)}
         </div>
       </div>
 
@@ -382,28 +387,17 @@ function FocusScoreSection() {
           ))}
         </svg>
 
-        <div className="mt-2 sm:mt-3 grid grid-cols-6 sm:grid-cols-8 gap-1 sm:gap-1.5 rounded-[10px] bg-white">
-          {timeline.map((item, index) => (
-            <div
-              key={`${item.state}-${index}`}
-              className={`flex h-5 sm:h-6 lg:h-7 items-center justify-center rounded-md text-xs sm:text-sm shadow-[inset_0_-2px_0_rgba(255,255,255,0.24)] ${
-                item.state === "focus"
-                  ? "bg-[#ff5037]"
-                  : item.state === "short_break"
-                  ? "bg-[#83d225]"
-                  : "bg-[#ffbc17]"
-              } text-white`}
-            >
-              {item.icon}
-            </div>
-          ))}
-        </div>
-
         <div className="mt-2 sm:mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-xs sm:text-sm text-slate-700">
           <LegendDot color="#ff5037" label="Focus (25 นาที)" />
           <LegendDot color="#83d225" label="Short Break (5 นาที)" />
           <LegendDot color="#ffbc17" label="Long Rest (30 นาที)" />
         </div>
+        <p className="mt-2 text-xs text-slate-500">
+          ล่าสุด: score {latestDeviceReading?.focus?.score ?? "-"} | เวลา{" "}
+          {latestDeviceReading?.recorded_at
+            ? new Date(latestDeviceReading.recorded_at).toLocaleTimeString()
+            : "-"}
+        </p>
       </div>
     </section>
   );
@@ -474,7 +468,7 @@ function EmotionSection({
 }: {
   latestDeviceReading?: DeviceReadingPayload | null;
 }) {
-  const latestEmotionLabel = latestDeviceReading?.emotion.label ?? "normal";
+  const latestEmotionLabel = latestDeviceReading?.emotion?.label ?? "normal";
 
   return (
     <section className="rounded-[20px] border border-emerald-50 bg-white p-3 sm:p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)]">
@@ -487,16 +481,16 @@ function EmotionSection({
         {/* Emotion Circle */}
         <div className="rounded-[18px] border border-slate-100 bg-[radial-gradient(circle_at_center,#ffffff_0%,#fbfdff_100%)] p-3 sm:p-4 lg:p-5 flex justify-center">
           <div className="relative h-40 sm:h-56 lg:h-64 w-40 sm:w-56 lg:w-64 rounded-full bg-[conic-gradient(from_90deg,rgba(251,191,36,0.18)_0deg,rgba(34,197,94,0.14)_90deg,rgba(59,130,246,0.14)_180deg,rgba(239,68,68,0.16)_270deg,rgba(251,191,36,0.18)_360deg)]">
-            <div className="absolute inset-0 rounded-full border border-slate-100" />
-            <div className="absolute left-1/2 top-2 sm:top-3 lg:top-4 -translate-x-1/2 text-center text-[9px] sm:text-xs lg:text-sm text-slate-600">
+            <div className="absolute inset-0 z-0 rounded-full border border-slate-100" />
+            <div className="absolute left-1/2 top-2 z-20 sm:top-3 lg:top-4 -translate-x-1/2 text-center text-[9px] sm:text-xs lg:text-sm text-slate-600">
               <p className="font-medium">Valence (ความรู้สึก)</p>
               <p>ดี</p>
             </div>
-            <div className="absolute bottom-2 sm:bottom-3 lg:bottom-4 left-1/2 -translate-x-1/2 text-[9px] sm:text-xs lg:text-sm text-slate-600">เศร้า</div>
-            <div className="absolute left-1.5 sm:left-2 lg:left-3 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] lg:text-xs text-slate-600">Unmotivated</div>
-            <div className="absolute right-1.5 sm:right-2 lg:right-3 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] lg:text-xs text-slate-600">Motivate</div>
-            <div className="absolute left-1/2 top-1/2 h-px w-[78%] -translate-x-1/2 bg-slate-300" />
-            <div className="absolute left-1/2 top-1/2 h-[78%] w-px -translate-x-1/2 -translate-y-1/2 bg-slate-300" />
+            <div className="absolute bottom-2 left-1/2 z-20 -translate-x-1/2 text-[9px] sm:bottom-3 sm:text-xs lg:bottom-4 lg:text-sm text-slate-600">เศร้า</div>
+            <div className="absolute left-1.5 top-1/2 z-20 -translate-y-1/2 text-[8px] sm:left-2 sm:text-[10px] lg:left-3 lg:text-xs text-slate-600">Unmotivated</div>
+            <div className="absolute right-1.5 top-1/2 z-20 -translate-y-1/2 text-[8px] sm:right-2 sm:text-[10px] lg:right-3 lg:text-xs text-slate-600">Motivate</div>
+            <div className="absolute left-1/2 top-1/2 z-10 h-px w-[78%] -translate-x-1/2 bg-slate-300" />
+            <div className="absolute left-1/2 top-1/2 z-10 h-[78%] w-px -translate-x-1/2 -translate-y-1/2 bg-slate-300" />
 
             <EmotionPoint label="ผ่อนคลาย" color="#27b14b" x="28%" y="35%" />
             <EmotionPoint label="สนุก" color="#f9be16" x="74%" y="40%" />
@@ -534,24 +528,41 @@ function EmotionSection({
 
 function getCurrentStateLabel(latestDeviceReading: DeviceReadingPayload | null) {
   if (!latestDeviceReading) return "ปกติ";
-  return latestDeviceReading.focus.state;
+  return latestDeviceReading.focus?.state ?? "ปกติ";
 }
 
 function getCurrentStateNote(latestDeviceReading: DeviceReadingPayload | null) {
   if (!latestDeviceReading) return "รอข้อมูลจากอุปกรณ์";
-  return `อารมณ์ ${latestDeviceReading.emotion.label}`;
+  return `อารมณ์ ${latestDeviceReading.emotion?.label ?? "ไม่ทราบ"}`;
 }
 
 function getInsightHeadline(latestDeviceReading: DeviceReadingPayload | null) {
   if (!latestDeviceReading) return "วันนี้คุณทำได้ดีมากเลย!";
-  if (latestDeviceReading.focus.score >= 75) return "สมาธิกำลังดี รักษาจังหวะนี้ไว้";
-  if (latestDeviceReading.focus.score >= 50) return "เริ่มมีโฟกัสดีขึ้นแล้ว";
+  const focusScore = latestDeviceReading.focus?.score;
+  if (typeof focusScore !== "number") return "ได้รับข้อมูลจากอุปกรณ์แล้ว";
+  if (focusScore >= 75) return "สมาธิกำลังดี รักษาจังหวะนี้ไว้";
+  if (focusScore >= 50) return "เริ่มมีโฟกัสดีขึ้นแล้ว";
   return "ลองพักสั้น ๆ แล้วกลับมาเริ่มใหม่";
 }
 
 function getInsightNote(latestDeviceReading: DeviceReadingPayload | null) {
   if (!latestDeviceReading) return "สานต่อสิ่งดี ๆ ต่อวันนี้ ๆ ให้กับคุณนะ";
-  return `ล่าสุด ${latestDeviceReading.emotion.label} | motion ${latestDeviceReading.sensors?.motion_level ?? "-"}`;
+  return `ล่าสุด ${latestDeviceReading.emotion?.label ?? "ไม่ทราบ"} | motion ${latestDeviceReading.sensors?.motion_level ?? "-"}`;
+}
+
+function formatPercent(value: number | undefined) {
+  if (typeof value !== "number") return "-";
+  return Math.round(value * 100).toString();
+}
+
+function formatDecimal(value: number | undefined, fractionDigits: number) {
+  if (typeof value !== "number") return "-";
+  return value.toFixed(fractionDigits);
+}
+
+function toProgress(value: number | undefined) {
+  if (typeof value !== "number") return undefined;
+  return Math.max(0, Math.min(100, Math.round(value * 100)));
 }
 
 function MetricCard({
@@ -653,7 +664,7 @@ function EmotionPoint({
   active?: boolean;
 }) {
   return (
-    <div className="absolute -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: x, top: y }}>
+    <div className="absolute z-30 -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: x, top: y }}>
       <div
         className={`mx-auto rounded-full ${active ? "h-6 w-6 ring-4 ring-[#a7ef7d]/55 sm:h-8 sm:w-8 lg:h-10 lg:w-10" : "h-3 w-3 sm:h-3.5 sm:w-3.5 lg:h-4 lg:w-4"}`}
         style={{ backgroundColor: color }}
