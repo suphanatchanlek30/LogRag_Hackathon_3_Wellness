@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LogRag (My Hack 3)
 
-## Getting Started
+โปรเจกต์เว็บดูแลเพื่อนน้อย พัฒนาด้วย Next.js (App Router)  
+ตอนนี้มีทั้งฝั่ง UI และ API backend ที่เชื่อม Supabase สำหรับทดสอบได้แล้ว
 
-First, run the development server:
+## สิ่งที่มีในตอนนี้
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- หน้าเลือกโซน `/`
+- หน้าโซนบก `/land`
+- หน้าแดชบอร์ด `/main`
+  - ปุ่ม Focus Timer (mock lock screen)
+  - กล่องเทส API (`/api/hello`, `/api/focus-sessions`)
+- API backend (Next Route Handlers)
+  - `GET /api/hello`
+  - `GET /api/focus-sessions`
+  - `POST /api/focus-sessions`
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- React 19 + TypeScript
+- Tailwind CSS v4
+- Supabase (`@supabase/supabase-js`)
+
+## โครงสร้างหลัก
+
+```txt
+app/
+  api/
+    hello/route.ts
+    focus-sessions/route.ts
+  main/page.tsx
+  land/page.tsx
+  page.tsx
+
+components/
+  focus/
+    focus-lock-panel.tsx      # UI โหมดโฟกัส + countdown
+    focus-api-test-panel.tsx  # UI ปุ่มเทส API
+  sidebar/sidebar.tsx
+  navbar/bottom-nav.tsx
+
+lib/
+  focus/
+    types.ts                  # type กลางของ focus session
+    api.ts                    # helper เรียก API จาก frontend
+  supabase/
+    client.ts                 # supabase client ฝั่ง browser
+    server.ts                 # supabase client ฝั่ง server
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ตั้งค่า Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+สร้าง/แก้ไฟล์ `.env.local`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
+```
 
-## Learn More
+หมายเหตุ:
+- `SUPABASE_SERVICE_ROLE_KEY` ใช้เฉพาะฝั่ง server เท่านั้น
+- เปลี่ยนค่าแล้วต้อง restart `npm run dev`
 
-To learn more about Next.js, take a look at the following resources:
+## เริ่มใช้งาน
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. ติดตั้งแพ็กเกจ
+```bash
+npm install
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. รันโปรเจกต์
+```bash
+npm run dev
+```
 
-## Deploy on Vercel
+3. เปิดเว็บ
+- `http://localhost:3000`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## วิธีเทสระบบ (แนะนำ)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. เปิด `http://localhost:3000/api/hello`  
+ต้องเห็น JSON ตอบกลับ `ok: true`
+
+2. เปิด `http://localhost:3000/main`
+
+3. ในกล่อง `Supabase API Test`:
+- กด `Test /api/hello`
+- กด `Create Session`
+- กด `Fetch Sessions`
+
+4. ไป Supabase Table Editor ตรวจตาราง `focus_sessions`  
+ต้องมีข้อมูลใหม่ถูกสร้าง
+
+## Supabase Setup เพิ่มเติม
+
+ดูเอกสารละเอียดที่:
+- [SUPABASE_SETUP.md](/mnt/c/My_Projects_Hack3/my_hack_3/SUPABASE_SETUP.md)
+
+ไฟล์นี้มีขั้นตอน Database, Auth, Storage, Realtime, Edge Functions ครบ
+
+## Scripts
+
+- `npm run dev` เริ่มโหมดพัฒนา
+- `npm run build` build production
+- `npm run start` รัน production
+- `npm run lint` ตรวจ lint
+
+## หมายเหตุ
+
+- โปรเจกต์นี้ใช้ Next.js รุ่นใหม่ ควรอิง docs ใน `node_modules/next/dist/docs/` ก่อนแก้โค้ดโครงสร้างใหญ่
+- เมนูบางส่วนใน sidebar ยังเป็น placeholder และถูกปิดการคลิกไว้
