@@ -26,11 +26,11 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const navItems = [
     { name: "แดชบอร์ด", href: "/main", icon: MdAutoGraph },
     { name: "โซนบก", href: "/land", icon: FaTree, iconColor: "text-amber-700" },
-    { name: "โซนน้ำ", href: "#", icon: FaWater, iconColor: "text-sky-500", badge: "เร็วๆ นี้" },
-    { name: "ภารกิจ", href: "/quests", icon: HiOutlineClipboardCheck },
-    { name: "กระเป๋า", href: "/bag", icon: HiOutlineShoppingBag },
-    { name: "การเติบโต", href: "/growth", icon: FaSeedling },
-    { name: "ตั้งค่า", href: "/settings", icon: HiOutlineCog },
+    { name: "โซนน้ำ", href: "#", icon: FaWater, iconColor: "text-sky-500", badge: "เร็วๆ นี้", disabled: true },
+    { name: "ภารกิจ", href: "#", icon: HiOutlineClipboardCheck, badge: "เร็วๆ นี้", disabled: true },
+    { name: "กระเป๋า", href: "#", icon: HiOutlineShoppingBag, badge: "เร็วๆ นี้", disabled: true },
+    { name: "การเติบโต", href: "#", icon: FaSeedling, badge: "เร็วๆ นี้", disabled: true },
+    { name: "ตั้งค่า", href: "#", icon: HiOutlineCog, badge: "เร็วๆ นี้", disabled: true },
   ];
 
   return (
@@ -67,18 +67,25 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const isDisabled = Boolean(item.disabled);
           
           return (
             <Link
               key={item.name}
               href={item.href}
               title={isCollapsed ? item.name : undefined}
+              aria-disabled={isDisabled}
+              onClick={(event) => {
+                if (isDisabled) event.preventDefault();
+              }}
               className={`group flex items-center rounded-2xl py-3.5 transition-all duration-200 ${
                 isCollapsed ? "justify-center px-2" : "justify-between px-5"
               } ${
                 isActive 
                   ? "bg-[#F3FCEB] text-[#3DC029] font-medium shadow-sm" 
-                  : "text-slate-500 font-light hover:bg-slate-50 hover:text-slate-800"
+                  : isDisabled
+                    ? "cursor-not-allowed text-slate-400 font-light"
+                    : "text-slate-500 font-light hover:bg-slate-50 hover:text-slate-800"
               }`}
             >
               <div className={`flex items-center ${isCollapsed ? "" : "gap-3.5"}`}>
