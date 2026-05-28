@@ -2,7 +2,13 @@
 
 import { usePathname } from "next/navigation";
 
-export default function MainWrapper({ children }: { children: React.ReactNode }) {
+export default function MainWrapper({
+  children,
+  isSidebarCollapsed,
+}: {
+  children: React.ReactNode;
+  isSidebarCollapsed: boolean;
+}) {
   const pathname = usePathname();
 
   // หากเป็นหน้าแรก "/" จะไม่เผื่อระยะ Sidebar ทางซ้าย
@@ -11,7 +17,9 @@ export default function MainWrapper({ children }: { children: React.ReactNode })
 
   return (
     <div
-      className={`flex min-h-screen w-full transition-all duration-300 ${!isHome ? "md:pl-[280px]" : ""}`}
+      className={`flex min-h-screen w-full transition-all duration-300 ${
+        !isHome ? (isSidebarCollapsed ? "md:pl-[88px]" : "md:pl-[280px]") : ""
+      }`}
     >
       <main className="flex-1 w-full min-h-screen">
         <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8 py-6">
