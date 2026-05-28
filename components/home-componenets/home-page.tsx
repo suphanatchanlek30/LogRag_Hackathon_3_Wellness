@@ -25,8 +25,8 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <span className="text-2xl">🍃</span>
             <h1 className="text-[clamp(2rem,8vw,3rem)] font-medium leading-none">
-              <span className="text-emerald-500">ดูแลเพื่อน</span>
-              <span className="text-sky-500">น้อย</span>
+              <span className="text-emerald-500">Log</span>
+              <span className="text-sky-500"> Rag</span>
             </h1>
             <span className="text-2xl">🍃</span>
           </div>
