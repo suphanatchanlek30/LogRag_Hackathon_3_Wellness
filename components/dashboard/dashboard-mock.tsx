@@ -70,20 +70,19 @@ export default function DashboardMock() {
     <>
       <section className="min-h-screen bg-[radial-gradient(circle_at_top,#f7fff7_0%,#ffffff_42%)] pb-6">
         <div className="mx-auto w-full space-y-3 sm:space-y-4 lg:space-y-5">
-          <section className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2">
-            <header className="flex flex-col justify-center gap-2">
-              <div>
-                <h1 className="text-[1.5rem] font-semibold leading-none tracking-tight text-slate-900 sm:text-[1.85rem] md:text-[2rem]">
-                  Dashboard
-                </h1>
-                <p className="mt-1.5 flex items-center gap-2 text-sm font-normal text-slate-600 sm:text-[1.02rem]">
-                  ติดตามสมาธิและอารมณ์ระหว่างวัน
-                  <span className="text-xl">🌱</span>
-                </p>
-              </div>
+          {/* Header Section */}
+          <section className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <header className="flex flex-col justify-center gap-1.5 flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold leading-none tracking-tight text-slate-900">
+                Dashboard
+              </h1>
+              <p className="flex items-center gap-2 text-xs sm:text-sm text-slate-600">
+                ติดตามสมาธิและอารมณ์ระหว่างวัน
+                <span className="text-lg">🌱</span>
+              </p>
             </header>
 
-            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 items-start">
+            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 w-full sm:w-auto">
               <TopSummaryCard />
               <StartFocusCard
                 onManualStart={() => setIsModalOpen(true)}
@@ -93,7 +92,7 @@ export default function DashboardMock() {
           </section>
 
           <div className="grid gap-3 lg:gap-5 grid-cols-1 lg:grid-cols-3">
-            <div className="space-y-4 lg:space-y-5 lg:col-span-2">
+            <div className="space-y-3 lg:space-y-4 lg:col-span-2">
               <FocusScoreSection />
 
               <div className="grid gap-2 sm:grid-cols-2">
@@ -141,13 +140,13 @@ export default function DashboardMock() {
                   height={724}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
-                <div className="relative flex min-h-[140px] flex-col justify-between gap-3 p-3 sm:flex-row sm:items-end sm:p-5">
-                  <div className="w-full sm:max-w-xs rounded-[18px] bg-white/92 p-3 shadow-[0_12px_24px_rgba(72,138,255,0.12)] backdrop-blur-sm">
-                    <div className="text-2xl text-sky-300">"</div>
-                    <p className="-mt-1 text-[0.96rem] font-medium leading-snug text-slate-800 sm:text-[1.06rem]">
+                <div className="relative flex min-h-[120px] flex-col justify-between gap-2 p-3 sm:flex-row sm:items-end sm:p-4">
+                  <div className="w-full sm:max-w-xs rounded-[16px] bg-white/92 p-2.5 sm:p-3 shadow-[0_12px_24px_rgba(72,138,255,0.12)] backdrop-blur-sm">
+                    <div className="text-xl text-sky-300">"</div>
+                    <p className="-mt-1 text-sm sm:text-base font-medium leading-snug text-slate-800">
                       วันนี้คุณทำได้ดีมากเลย!
                     </p>
-                    <p className="mt-2 text-sm text-slate-600 sm:text-[0.95rem]">
+                    <p className="mt-1.5 text-xs sm:text-sm text-slate-600">
                       สานต่อสิ่งดี ๆ ต่อวันนี้ ๆ ให้กับคุณนะ
                     </p>
                   </div>
@@ -156,13 +155,13 @@ export default function DashboardMock() {
                     alt="rabbit"
                     width={160}
                     height={160}
-                    className="mx-auto h-[80px] w-[80px] object-contain sm:mx-0 sm:h-[100px] sm:w-[100px]"
+                    className="mx-auto h-16 w-16 object-contain sm:mx-0 sm:h-20 sm:w-20"
                   />
                 </div>
               </section>
             </div>
 
-            <div className="space-y-4 lg:space-y-5 lg:col-span-1">
+            <div className="space-y-3 lg:space-y-4 lg:col-span-1">
               <FocusCycleSection />
               <EmotionSection />
             </div>
@@ -249,13 +248,13 @@ export default function DashboardMock() {
 
 function TopSummaryCard() {
   return (
-    <section className="flex min-h-[72px] w-full items-center gap-3 rounded-[14px] border border-slate-100 bg-white p-2.5 shadow-[0_6px_16px_rgba(15,23,42,0.04)] sm:min-h-[84px]">
-      <Image src="/dashboard/today_focus.png" alt="today focus" width={48} height={48} className="h-10 w-10 object-contain sm:h-12 sm:w-12" />
-      <div className="flex-1">
-        <p className="text-sm font-medium leading-snug text-slate-500 sm:text-sm">Today Focus Score</p>
+    <section className="flex min-h-16 w-full items-center gap-2 sm:gap-3 rounded-[12px] border border-slate-100 bg-white p-2 sm:p-2.5 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
+      <Image src="/dashboard/today_focus.png" alt="today focus" width={48} height={48} className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10" />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs sm:text-sm font-medium leading-tight text-slate-500">Today Focus Score</p>
         <div className="mt-0.5 flex items-end gap-1">
-          <span className="text-[1.4rem] font-semibold leading-none text-[#28bf41] sm:text-[1.8rem]">72</span>
-          <span className="pb-0.5 text-sm font-medium text-slate-500 sm:text-base">/100</span>
+          <span className="text-base sm:text-xl font-semibold leading-none text-[#28bf41]">72</span>
+          <span className="text-xs sm:text-sm font-medium text-slate-500">/100</span>
         </div>
       </div>
     </section>
@@ -270,32 +269,32 @@ function StartFocusCard({
   onMockStart: () => void;
 }) {
   return (
-    <section className="w-full rounded-[18px] bg-[linear-gradient(135deg,#1fd149_0%,#18b634_55%,#169d2c_100%)] p-[1px] shadow-[0_12px_26px_rgba(34,197,94,0.18)]">
-      <div className="flex min-h-[84px] h-full flex-col justify-between rounded-[17px] bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0)_60%)] p-3 text-white sm:min-h-[96px]">
+    <section className="w-full rounded-[14px] bg-[linear-gradient(135deg,#1fd149_0%,#18b634_55%,#169d2c_100%)] p-[1px] shadow-[0_12px_26px_rgba(34,197,94,0.18)]">
+      <div className="flex min-h-16 h-full flex-col justify-between rounded-[13px] bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0)_60%)] p-2 sm:p-2.5 text-white">
         <button
           type="button"
           onClick={onManualStart}
-          className="flex items-center gap-3 text-left"
+          className="flex items-center gap-2 sm:gap-2.5 text-left"
         >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-xl text-[#1fbe3d] shadow-[0_10px_22px_rgba(255,255,255,0.26)] sm:h-11 sm:w-11">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-sm text-[#1fbe3d] shadow-[0_10px_22px_rgba(255,255,255,0.26)] sm:h-9 sm:w-9 sm:text-base">
             ▶
           </span>
           <div className="min-w-0">
-            <p className="text-[0.98rem] font-semibold leading-tight sm:text-[1.06rem]">Start Focus</p>
-            <p className="mt-0.5 text-[0.85rem] text-white/88">เริ่มโฟกัสตอนนี้</p>
+            <p className="text-sm sm:text-base font-semibold leading-tight">Start Focus</p>
+            <p className="mt-0.5 text-xs text-white/88">เริ่มโฟกัสตอนนี้</p>
           </div>
           <Image
             src="/mainpage/image/aCarrot.png"
             alt="carrot"
             width={44}
             height={44}
-            className="ml-auto h-7 w-7 shrink-0 object-contain"
+            className="ml-auto h-5 w-5 shrink-0 object-contain sm:h-6 sm:w-6"
           />
         </button>
         <button
           type="button"
           onClick={onMockStart}
-          className="mt-1 self-start rounded-full border border-white/30 bg-white/12 px-2 py-0.5 text-[0.72rem] font-medium text-white hover:bg-white/18"
+          className="mt-1 self-start rounded-full border border-white/30 bg-white/12 px-2 py-0.5 text-[0.65rem] sm:text-[0.7rem] font-medium text-white hover:bg-white/18"
         >
           Mock Device Trigger
         </button>
@@ -319,22 +318,22 @@ function FocusScoreSection() {
     .join(" ");
 
   return (
-    <section className="w-full rounded-[24px] border border-emerald-50 bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)] sm:p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-[#1fc243] text-xs font-semibold text-white sm:h-8 sm:w-8 sm:text-sm">1</span>
-          <div>
-            <h2 className="text-[1.15rem] font-semibold text-slate-900 sm:text-[1.35rem]">Focus Score / ช่วงเวลา</h2>
-            <p className="mt-1 text-sm text-slate-500">Focus Score</p>
+    <section className="w-full rounded-[20px] border border-emerald-50 bg-white p-3 sm:p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#1fc243] text-xs font-semibold text-white sm:h-7 sm:w-7">1</span>
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-base font-semibold text-slate-900">Focus Score / ช่วงเวลา</h2>
+            <p className="mt-0.5 text-xs text-slate-500">Focus Score</p>
           </div>
         </div>
-        <div className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-[#28bf41] sm:px-4 sm:py-2 sm:text-base">
+        <div className="rounded-full border border-emerald-100 bg-emerald-50 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold text-[#28bf41] whitespace-nowrap">
           ↗ AVG 72
         </div>
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-[20px] border border-slate-100 bg-[linear-gradient(180deg,#ffffff_0%,#fcfffb_100%)] p-2 sm:p-3">
-        <svg viewBox={`0 0 ${width} ${height}`} className="h-[180px] w-full sm:h-[220px] lg:h-[250px]">
+      <div className="mt-2 sm:mt-3 overflow-hidden rounded-[16px] border border-slate-100 bg-[linear-gradient(180deg,#ffffff_0%,#fcfffb_100%)] p-1.5 sm:p-2 lg:p-3">
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-[160px] w-full sm:h-[220px] lg:h-[280px]" preserveAspectRatio="xMidYMid meet">
           {[0, 25, 50, 75, 100].map((tick, index) => {
             const y = height - padding - (tick / 100) * (height - padding * 2);
             return (
@@ -377,11 +376,11 @@ function FocusScoreSection() {
           ))}
         </svg>
 
-        <div className="mt-2 grid grid-cols-6 sm:grid-cols-8 gap-1 rounded-[12px] bg-white">
+        <div className="mt-2 sm:mt-3 grid grid-cols-6 sm:grid-cols-8 gap-1 sm:gap-1.5 rounded-[10px] bg-white">
           {timeline.map((item, index) => (
             <div
               key={`${item.state}-${index}`}
-              className={`flex h-7 items-center justify-center rounded-md text-xs shadow-[inset_0_-2px_0_rgba(255,255,255,0.24)] sm:h-9 sm:text-base ${
+              className={`flex h-5 sm:h-6 lg:h-7 items-center justify-center rounded-md text-xs sm:text-sm shadow-[inset_0_-2px_0_rgba(255,255,255,0.24)] ${
                 item.state === "focus"
                   ? "bg-[#ff5037]"
                   : item.state === "short_break"
@@ -394,7 +393,7 @@ function FocusScoreSection() {
           ))}
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-700 sm:text-sm">
+        <div className="mt-2 sm:mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-xs sm:text-sm text-slate-700">
           <LegendDot color="#ff5037" label="Focus (25 นาที)" />
           <LegendDot color="#83d225" label="Short Break (5 นาที)" />
           <LegendDot color="#ffbc17" label="Long Rest (30 นาที)" />
@@ -414,16 +413,16 @@ function FocusCycleSection() {
   ];
 
   return (
-    <section className="w-full rounded-[24px] border border-emerald-50 bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)] sm:p-5">
-      <div className="flex items-center gap-3">
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#1fc243] text-xs font-semibold text-white sm:h-8 sm:w-8 sm:text-sm">2</span>
-        <h2 className="text-[1.15rem] font-semibold text-slate-900 sm:text-[1.35rem]">วงจรโฟกัส / พัก</h2>
+    <section className="w-full rounded-[20px] border border-emerald-50 bg-white p-3 sm:p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)]">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#1fc243] text-xs font-semibold text-white sm:h-7 sm:w-7">2</span>
+        <h2 className="text-sm sm:text-base font-semibold text-slate-900">วงจรโฟกัส / พัก</h2>
       </div>
 
-      <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-1">
+      <div className="mt-3 grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-1">
         <div className="grid place-items-center">
           <div
-            className="relative h-[160px] w-[160px] rounded-full sm:h-[200px] sm:w-[200px] lg:h-[240px] lg:w-[240px]"
+            className="relative h-32 w-32 rounded-full sm:h-40 sm:w-40 lg:h-48 lg:w-48"
             style={{
               background: `conic-gradient(
                 ${segments[0].color} 0% 35%,
@@ -438,24 +437,24 @@ function FocusCycleSection() {
               )`,
             }}
           >
-            <div className="absolute inset-[18px] grid place-items-center rounded-full bg-white shadow-[inset_0_0_0_1px_rgba(226,232,240,0.9)] sm:inset-[24px] lg:inset-[32px]">
+            <div className="absolute inset-4 grid place-items-center rounded-full bg-white shadow-[inset_0_0_0_1px_rgba(226,232,240,0.9)] sm:inset-5 lg:inset-8">
               <Image
                 src="/mainpage/image/aCarrot.png"
                 alt="carrot cycle"
                 width={120}
                 height={120}
-                className="h-12 w-12 object-contain sm:h-16 sm:w-16 lg:h-20 lg:w-20"
+                className="h-10 w-10 object-contain sm:h-12 sm:w-12 lg:h-16 lg:w-16"
               />
-              <p className="-mt-1 text-lg font-semibold text-slate-800 sm:text-xl lg:text-2xl">1 Cycle</p>
+              <p className="-mt-1 text-base font-semibold text-slate-800 sm:text-lg lg:text-xl">1 Cycle</p>
             </div>
           </div>
         </div>
 
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-1.5 sm:space-y-2">
           <CycleItem color="#ff3d30" title="Focus" subtitle="ทำงานอย่างตั้งใจ" value="25 นาที" />
           <CycleItem color="#82d21e" title="Short Break" subtitle="พักสั้น ๆ รีเซ็ตสมาธิ" value="5 นาที" />
           <CycleItem color="#ffbe18" title="Long Rest" subtitle="พักยาว ชาร์จพลังใจ" value="30 นาที" />
-          <div className="rounded-[20px] border border-emerald-100 bg-[linear-gradient(180deg,#f9fff6_0%,#f3ffef_100%)] px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-[#46a329]">
+          <div className="rounded-[16px] border border-emerald-100 bg-[linear-gradient(180deg,#f9fff6_0%,#f3ffef_100%)] px-3 py-1.5 sm:py-2 text-xs font-medium text-[#46a329]">
             💡 แนะนำ: ทำ 4 รอบ แล้วพักยาว 30 นาที 🍃
           </div>
         </div>
@@ -466,23 +465,24 @@ function FocusCycleSection() {
 
 function EmotionSection() {
   return (
-    <section className="rounded-[24px] border border-emerald-50 bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)] sm:p-5">
-      <div className="flex items-center gap-3">
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#1fc243] text-xs font-semibold text-white sm:h-8 sm:w-8 sm:text-sm">3</span>
-        <h2 className="text-[1.15rem] font-semibold text-slate-900 sm:text-[1.35rem]">Emotion State</h2>
+    <section className="rounded-[20px] border border-emerald-50 bg-white p-3 sm:p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)]">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#1fc243] text-xs font-semibold text-white sm:h-7 sm:w-7">3</span>
+        <h2 className="text-sm sm:text-base font-semibold text-slate-900">Emotion State</h2>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2">
-        <div className="rounded-[22px] border border-slate-100 bg-[radial-gradient(circle_at_center,#ffffff_0%,#fbfdff_100%)] p-3 sm:p-4">
-          <div className="relative mx-auto h-[160px] max-w-full rounded-full bg-[conic-gradient(from_90deg,rgba(251,191,36,0.18)_0deg,rgba(34,197,94,0.14)_90deg,rgba(59,130,246,0.14)_180deg,rgba(239,68,68,0.16)_270deg,rgba(251,191,36,0.18)_360deg)] sm:h-[200px] lg:h-[240px]">
+      <div className="mt-3 space-y-3 sm:space-y-4">
+        {/* Emotion Circle */}
+        <div className="rounded-[18px] border border-slate-100 bg-[radial-gradient(circle_at_center,#ffffff_0%,#fbfdff_100%)] p-3 sm:p-4 lg:p-5 flex justify-center">
+          <div className="relative h-40 sm:h-56 lg:h-64 w-40 sm:w-56 lg:w-64 rounded-full bg-[conic-gradient(from_90deg,rgba(251,191,36,0.18)_0deg,rgba(34,197,94,0.14)_90deg,rgba(59,130,246,0.14)_180deg,rgba(239,68,68,0.16)_270deg,rgba(251,191,36,0.18)_360deg)]">
             <div className="absolute inset-0 rounded-full border border-slate-100" />
-            <div className="absolute left-1/2 top-2 sm:top-3 -translate-x-1/2 text-center text-[10px] sm:text-xs text-slate-600">
+            <div className="absolute left-1/2 top-2 sm:top-3 lg:top-4 -translate-x-1/2 text-center text-[9px] sm:text-xs lg:text-sm text-slate-600">
               <p className="font-medium">Valence (ความรู้สึก)</p>
               <p>ดี</p>
             </div>
-            <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs text-slate-600">เศร้า</div>
-            <div className="absolute left-1.5 sm:left-2.5 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] text-slate-600">Unmotivated</div>
-            <div className="absolute right-1.5 sm:right-2.5 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] text-slate-600">Motivate</div>
+            <div className="absolute bottom-2 sm:bottom-3 lg:bottom-4 left-1/2 -translate-x-1/2 text-[9px] sm:text-xs lg:text-sm text-slate-600">เศร้า</div>
+            <div className="absolute left-1.5 sm:left-2 lg:left-3 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] lg:text-xs text-slate-600">Unmotivated</div>
+            <div className="absolute right-1.5 sm:right-2 lg:right-3 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] lg:text-xs text-slate-600">Motivate</div>
             <div className="absolute left-1/2 top-1/2 h-px w-[78%] -translate-x-1/2 bg-slate-300" />
             <div className="absolute left-1/2 top-1/2 h-[78%] w-px -translate-x-1/2 -translate-y-1/2 bg-slate-300" />
 
@@ -494,21 +494,20 @@ function EmotionSection() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 sm:gap-3">
-          <div className="rounded-[22px] border border-slate-100 bg-white p-3 sm:p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
-            {emotionLegend.map((item) => (
-              <div key={item.key} className="flex items-center gap-2 sm:gap-3 border-b border-slate-100 py-2 sm:py-2.5 last:border-b-0">
-                <span className="h-3 w-3 shrink-0 rounded-full sm:h-3.5 sm:w-3.5" style={{ backgroundColor: item.color }} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm sm:text-base font-medium text-slate-800">{item.label}</p>
-                  <p className="text-xs text-slate-500">{item.note}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="rounded-[20px] border border-emerald-100 bg-[linear-gradient(180deg,#f7fff7_0%,#f0ffef_100%)] px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-[#319541]">
-            💚 ตรวจสอบอารมณ์ของคุณสม่ำเสมอ เพื่อให้เข้าใจตัวเองมากขึ้น
-          </div>
+        {/* Legend Grid */}
+        <div className="grid gap-1.5 sm:gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+          {emotionLegend.map((item) => (
+            <div key={item.key} className="rounded-[12px] border border-slate-100 bg-white p-1.5 sm:p-2 text-center">
+              <span className="mx-auto mb-1 block h-2.5 w-2.5 shrink-0 rounded-full sm:h-3 sm:w-3" style={{ backgroundColor: item.color }} />
+              <p className="text-[10px] sm:text-xs font-medium text-slate-800">{item.label}</p>
+              <p className="text-[8px] sm:text-[10px] text-slate-500">{item.note}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Tip Message */}
+        <div className="rounded-[16px] border border-emerald-100 bg-[linear-gradient(180deg,#f7fff7_0%,#f0ffef_100%)] px-2.5 sm:px-3 py-1.5 sm:py-2 text-center text-[11px] sm:text-xs font-medium text-[#319541]">
+          💚 ตรวจสอบอารมณ์ของคุณสม่ำเสมอ เพื่อให้เข้าใจตัวเองมากขึ้น
         </div>
       </div>
     </section>
@@ -549,16 +548,16 @@ function MetricCard({
         };
 
   return (
-    <section className={`rounded-[22px] border border-slate-100 bg-gradient-to-b ${theme.bg} p-4 shadow-[0_12px_22px_rgba(15,23,42,0.05)]`}>
-      <Image src={icon} alt={title} width={58} height={58} className="h-12 w-12 object-contain" />
-      <p className="mt-3 text-[0.95rem] font-medium text-slate-700 sm:text-base">{title}</p>
-      <div className="mt-2 flex items-end gap-1.5">
-        <span className="text-[1.6rem] font-semibold leading-none text-slate-900 sm:text-[1.85rem]">{value}</span>
-        {unit ? <span className="pb-0.5 text-sm text-slate-600 sm:text-[0.95rem]">{unit}</span> : null}
+    <section className={`rounded-[18px] border border-slate-100 bg-gradient-to-b ${theme.bg} p-3 sm:p-4 shadow-[0_12px_22px_rgba(15,23,42,0.05)]`}>
+      <Image src={icon} alt={title} width={58} height={58} className="h-10 w-10 object-contain" />
+      <p className="mt-2 text-xs sm:text-sm font-medium text-slate-700">{title}</p>
+      <div className="mt-1.5 flex items-end gap-1">
+        <span className="text-base sm:text-lg font-semibold leading-none text-slate-900">{value}</span>
+        {unit ? <span className="text-[11px] sm:text-xs text-slate-600">{unit}</span> : null}
       </div>
-      <p className="mt-2.5 text-xs text-slate-500 sm:text-sm">{footer}</p>
+      <p className="mt-2 text-[11px] sm:text-xs text-slate-500">{footer}</p>
       {typeof progress === "number" ? (
-        <div className="mt-3 h-2 rounded-full bg-white/80">
+        <div className="mt-2.5 h-1.5 rounded-full bg-white/80">
           <div className={`h-full rounded-full ${theme.line}`} style={{ width: `${progress}%` }} />
         </div>
       ) : null}
@@ -578,14 +577,14 @@ function CycleItem({
   value: string;
 }) {
   return (
-    <div className="rounded-[22px] border border-slate-100 bg-white px-4 py-3.5 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
-      <div className="flex items-start gap-4">
-        <span className="mt-1 h-4 w-4 rounded-full" style={{ backgroundColor: color }} />
+    <div className="rounded-[16px] border border-slate-100 bg-white px-3 py-2 sm:px-4 sm:py-3 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
+      <div className="flex items-start gap-3">
+        <span className="mt-1 h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: color }} />
         <div className="flex-1">
-          <p className="text-base font-semibold text-slate-800 sm:text-[1.05rem]">{title}</p>
-          <p className="mt-1 text-xs text-slate-500 sm:text-sm">{subtitle}</p>
+          <p className="text-sm font-semibold text-slate-800 sm:text-base">{title}</p>
+          <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">{subtitle}</p>
         </div>
-        <p className="text-[1.25rem] font-semibold text-slate-800 sm:text-[1.45rem]">{value}</p>
+        <p className="text-sm sm:text-base font-semibold text-slate-800">{value}</p>
       </div>
     </div>
   );
@@ -593,8 +592,8 @@ function CycleItem({
 
 function LegendDot({ color, label }: { color: string; label: string }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: color }} />
+    <div className="flex items-center gap-1.5 text-[11px] sm:text-xs">
+      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
       <span>{label}</span>
     </div>
   );
@@ -616,10 +615,10 @@ function EmotionPoint({
   return (
     <div className="absolute -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: x, top: y }}>
       <div
-        className={`mx-auto rounded-full ${active ? "h-6 w-6 ring-4 ring-[#a7ef7d]/55 sm:h-8 sm:w-8" : "h-3.5 w-3.5 sm:h-4 sm:w-4"}`}
+        className={`mx-auto rounded-full ${active ? "h-6 w-6 ring-4 ring-[#a7ef7d]/55 sm:h-8 sm:w-8 lg:h-10 lg:w-10" : "h-3 w-3 sm:h-3.5 sm:w-3.5 lg:h-4 lg:w-4"}`}
         style={{ backgroundColor: color }}
       />
-      <p className="mt-1.5 text-[10px] font-medium text-slate-600 sm:text-xs">{label}</p>
+      <p className="mt-1.5 text-[9px] sm:text-xs lg:text-sm font-medium text-slate-600">{label}</p>
     </div>
   );
 }
