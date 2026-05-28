@@ -27,10 +27,10 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
     { name: "แดชบอร์ด", href: "/main", icon: MdAutoGraph },
     { name: "โซนบก", href: "/land", icon: FaTree, iconColor: "text-amber-700" },
     { name: "โซนน้ำ", href: "#", icon: FaWater, iconColor: "text-sky-500", badge: "เร็วๆ นี้", disabled: true },
-    { name: "ภารกิจ", href: "#", icon: HiOutlineClipboardCheck, badge: "เร็วๆ นี้", disabled: true },
-    { name: "กระเป๋า", href: "#", icon: HiOutlineShoppingBag, badge: "เร็วๆ นี้", disabled: true },
-    { name: "การเติบโต", href: "#", icon: FaSeedling, badge: "เร็วๆ นี้", disabled: true },
-    { name: "ตั้งค่า", href: "#", icon: HiOutlineCog, badge: "เร็วๆ นี้", disabled: true },
+    { name: "ภารกิจ", href: "#", icon: HiOutlineClipboardCheck, disabled: true },
+    { name: "กระเป๋า", href: "#", icon: HiOutlineShoppingBag, disabled: true },
+    { name: "การเติบโต", href: "#", icon: FaSeedling, disabled: true },
+    { name: "ตั้งค่า", href: "#", icon: HiOutlineCog, disabled: true },
   ];
 
   return (
