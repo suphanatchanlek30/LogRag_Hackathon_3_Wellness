@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import BluetoothPanel from "@/components/dashboard/bluetooth-panel";
+import type { DeviceReadingPayload } from "@/lib/backend/focus-types";
 
 type FocusSource = "device" | "manual";
 
@@ -34,6 +36,7 @@ export default function DashboardMock() {
   const [remainingSec, setRemainingSec] = useState(0);
   const [selectedMin, setSelectedMin] = useState(25);
   const [lastSource, setLastSource] = useState<FocusSource>("manual");
+  const [latestDeviceReading, setLatestDeviceReading] = useState<DeviceReadingPayload | null>(null);
 
   useEffect(() => {
     if (!isLocked || remainingSec <= 0) return;
@@ -83,7 +86,7 @@ export default function DashboardMock() {
             </header>
 
             <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 w-full sm:w-auto">
-              <TopSummaryCard />
+              <TopSummaryCard latestDeviceReading={latestDeviceReading} />
               <StartFocusCard
                 onManualStart={() => setIsModalOpen(true)}
                 onMockStart={() => activateFocus(20 * 60, "device")}
@@ -94,6 +97,7 @@ export default function DashboardMock() {
           <div className="grid gap-3 lg:gap-5 grid-cols-1 lg:grid-cols-3">
             <div className="space-y-3 lg:space-y-4 lg:col-span-2">
               <FocusScoreSection />
+              <BluetoothPanel onLatestReading={setLatestDeviceReading} />
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <MetricCard
@@ -125,10 +129,10 @@ export default function DashboardMock() {
                 <MetricCard
                   icon="/dashboard/current_state.png"
                   title="Current State"
-                  value="ปกติ"
+                  value={getCurrentStateLabel(latestDeviceReading)}
                   unit=""
                   accent="blue"
-                  footer="สมดุลดี"
+                  footer={getCurrentStateNote(latestDeviceReading)}
                 />
               </div>
 
@@ -144,10 +148,10 @@ export default function DashboardMock() {
                   <div className="w-full sm:max-w-xs rounded-[16px] bg-white/92 p-2.5 sm:p-3 shadow-[0_12px_24px_rgba(72,138,255,0.12)] backdrop-blur-sm">
                     <div className="text-xl text-sky-300">"</div>
                     <p className="-mt-1 text-sm sm:text-base font-medium leading-snug text-slate-800">
-                      วันนี้คุณทำได้ดีมากเลย!
+                      {getInsightHeadline(latestDeviceReading)}
                     </p>
                     <p className="mt-1.5 text-xs sm:text-sm text-slate-600">
-                      สานต่อสิ่งดี ๆ ต่อวันนี้ ๆ ให้กับคุณนะ
+                      {getInsightNote(latestDeviceReading)}
                     </p>
                   </div>
                   <Image
@@ -163,7 +167,7 @@ export default function DashboardMock() {
 
             <div className="space-y-3 lg:space-y-4 lg:col-span-1">
               <FocusCycleSection />
-              <EmotionSection />
+              <EmotionSection latestDeviceReading={latestDeviceReading} />
             </div>
           </div>
         </div>
@@ -246,14 +250,16 @@ export default function DashboardMock() {
   );
 }
 
-function TopSummaryCard() {
+function TopSummaryCard({ latestDeviceReading }: { latestDeviceReading?: DeviceReadingPayload | null }) {
   return (
     <section className="flex min-h-16 w-full items-center gap-2 sm:gap-3 rounded-[12px] border border-slate-100 bg-white p-2 sm:p-2.5 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
       <Image src="/dashboard/today_focus.png" alt="today focus" width={48} height={48} className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10" />
       <div className="flex-1 min-w-0">
         <p className="text-xs sm:text-sm font-medium leading-tight text-slate-500">Today Focus Score</p>
         <div className="mt-0.5 flex items-end gap-1">
-          <span className="text-base sm:text-xl font-semibold leading-none text-[#28bf41]">72</span>
+          <span className="text-base sm:text-xl font-semibold leading-none text-[#28bf41]">
+            {latestDeviceReading?.focus.score ?? 72}
+          </span>
           <span className="text-xs sm:text-sm font-medium text-slate-500">/100</span>
         </div>
       </div>
@@ -463,7 +469,13 @@ function FocusCycleSection() {
   );
 }
 
-function EmotionSection() {
+function EmotionSection({
+  latestDeviceReading,
+}: {
+  latestDeviceReading?: DeviceReadingPayload | null;
+}) {
+  const latestEmotionLabel = latestDeviceReading?.emotion.label ?? "normal";
+
   return (
     <section className="rounded-[20px] border border-emerald-50 bg-white p-3 sm:p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)]">
       <div className="flex items-center gap-2 sm:gap-3">
@@ -490,7 +502,13 @@ function EmotionSection() {
             <EmotionPoint label="สนุก" color="#f9be16" x="74%" y="40%" />
             <EmotionPoint label="เบื่อ" color="#3b82f6" x="32%" y="70%" />
             <EmotionPoint label="เครียด" color="#ef4444" x="70%" y="71%" />
-            <EmotionPoint label="Normal" color="#8bc34a" x="56%" y="54%" active />
+            <EmotionPoint
+              label={emotionLegend.find((item) => item.key === latestEmotionLabel)?.label ?? "Normal"}
+              color={emotionLegend.find((item) => item.key === latestEmotionLabel)?.color ?? "#8bc34a"}
+              x="56%"
+              y="54%"
+              active
+            />
           </div>
         </div>
 
@@ -512,6 +530,28 @@ function EmotionSection() {
       </div>
     </section>
   );
+}
+
+function getCurrentStateLabel(latestDeviceReading: DeviceReadingPayload | null) {
+  if (!latestDeviceReading) return "ปกติ";
+  return latestDeviceReading.focus.state;
+}
+
+function getCurrentStateNote(latestDeviceReading: DeviceReadingPayload | null) {
+  if (!latestDeviceReading) return "รอข้อมูลจากอุปกรณ์";
+  return `อารมณ์ ${latestDeviceReading.emotion.label}`;
+}
+
+function getInsightHeadline(latestDeviceReading: DeviceReadingPayload | null) {
+  if (!latestDeviceReading) return "วันนี้คุณทำได้ดีมากเลย!";
+  if (latestDeviceReading.focus.score >= 75) return "สมาธิกำลังดี รักษาจังหวะนี้ไว้";
+  if (latestDeviceReading.focus.score >= 50) return "เริ่มมีโฟกัสดีขึ้นแล้ว";
+  return "ลองพักสั้น ๆ แล้วกลับมาเริ่มใหม่";
+}
+
+function getInsightNote(latestDeviceReading: DeviceReadingPayload | null) {
+  if (!latestDeviceReading) return "สานต่อสิ่งดี ๆ ต่อวันนี้ ๆ ให้กับคุณนะ";
+  return `ล่าสุด ${latestDeviceReading.emotion.label} | motion ${latestDeviceReading.sensors?.motion_level ?? "-"}`;
 }
 
 function MetricCard({
