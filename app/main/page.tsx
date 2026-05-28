@@ -1,4 +1,5 @@
 import FocusLockPanel from "@/components/focus/focus-lock-panel";
+import FocusApiTestPanel from "@/components/focus/focus-api-test-panel";
 
 export default function MainPage() {
   return (
@@ -8,6 +9,7 @@ export default function MainPage() {
       <p className="mt-2 max-w-2xl text-base font-normal text-slate-600">
         หน้า mock สำหรับทดสอบโหมด Focus: กดปุ่มมุมขวาบนเพื่อเริ่มนับถอยหลังและล็อกหน้าจอ
       </p>
+      <FocusApiTestPanel />
     </section>
   );
 }
