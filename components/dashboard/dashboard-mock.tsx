@@ -70,7 +70,7 @@ export default function DashboardMock() {
     <>
       <section className="min-h-screen bg-[radial-gradient(circle_at_top,#f7fff7_0%,#ffffff_42%)] pb-6">
         <div className="mx-auto w-full space-y-3 sm:space-y-4 lg:space-y-5">
-          <section className="grid gap-4 xl:grid-cols-[minmax(260px,1fr)_minmax(260px,420px)]">
+          <section className="grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2">
             <header className="flex flex-col justify-center gap-2">
               <div>
                 <h1 className="text-[1.5rem] font-semibold leading-none tracking-tight text-slate-900 sm:text-[1.85rem] md:text-[2rem]">
@@ -83,7 +83,7 @@ export default function DashboardMock() {
               </div>
             </header>
 
-            <div className="grid gap-2 sm:grid-cols-2 xl:self-start items-start">
+            <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 items-start">
               <TopSummaryCard />
               <StartFocusCard
                 onManualStart={() => setIsModalOpen(true)}
@@ -92,8 +92,8 @@ export default function DashboardMock() {
             </div>
           </section>
 
-          <div className="grid gap-3 lg:gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(380px,430px)]">
-            <div className="space-y-4 lg:space-y-5">
+          <div className="grid gap-3 lg:gap-5 grid-cols-1 lg:grid-cols-3">
+            <div className="space-y-4 lg:space-y-5 lg:col-span-2">
               <FocusScoreSection />
 
               <div className="grid gap-2 sm:grid-cols-2">
@@ -142,8 +142,8 @@ export default function DashboardMock() {
                   className="absolute inset-0 h-full w-full object-cover"
                 />
                 <div className="relative flex min-h-[140px] flex-col justify-between gap-3 p-3 sm:flex-row sm:items-end sm:p-5">
-                  <div className="max-w-[360px] rounded-[18px] bg-white/92 p-3 shadow-[0_12px_24px_rgba(72,138,255,0.12)] backdrop-blur-sm">
-                    <div className="text-2xl text-sky-300">“</div>
+                  <div className="w-full sm:max-w-xs rounded-[18px] bg-white/92 p-3 shadow-[0_12px_24px_rgba(72,138,255,0.12)] backdrop-blur-sm">
+                    <div className="text-2xl text-sky-300">"</div>
                     <p className="-mt-1 text-[0.96rem] font-medium leading-snug text-slate-800 sm:text-[1.06rem]">
                       วันนี้คุณทำได้ดีมากเลย!
                     </p>
@@ -156,13 +156,13 @@ export default function DashboardMock() {
                     alt="rabbit"
                     width={160}
                     height={160}
-                    className="mx-auto h-[96px] w-[96px] object-contain sm:mx-0 sm:h-[128px] sm:w-[128px]"
+                    className="mx-auto h-[80px] w-[80px] object-contain sm:mx-0 sm:h-[100px] sm:w-[100px]"
                   />
                 </div>
               </section>
             </div>
 
-            <div className="space-y-4 lg:space-y-5">
+            <div className="space-y-4 lg:space-y-5 lg:col-span-1">
               <FocusCycleSection />
               <EmotionSection />
             </div>
@@ -420,10 +420,10 @@ function FocusCycleSection() {
         <h2 className="text-[1.15rem] font-semibold text-slate-900 sm:text-[1.35rem]">วงจรโฟกัส / พัก</h2>
       </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-[0.95fr_1.05fr] xl:grid-cols-1 2xl:grid-cols-[0.96fr_1.04fr]">
+      <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-1">
         <div className="grid place-items-center">
           <div
-            className="relative h-[180px] w-[180px] rounded-full sm:h-[220px] sm:w-[220px] lg:h-[260px] lg:w-[260px]"
+            className="relative h-[160px] w-[160px] rounded-full sm:h-[200px] sm:w-[200px] lg:h-[240px] lg:w-[240px]"
             style={{
               background: `conic-gradient(
                 ${segments[0].color} 0% 35%,
@@ -438,24 +438,24 @@ function FocusCycleSection() {
               )`,
             }}
           >
-            <div className="absolute inset-[26px] grid place-items-center rounded-full bg-white shadow-[inset_0_0_0_1px_rgba(226,232,240,0.9)] sm:inset-[34px]">
+            <div className="absolute inset-[18px] grid place-items-center rounded-full bg-white shadow-[inset_0_0_0_1px_rgba(226,232,240,0.9)] sm:inset-[24px] lg:inset-[32px]">
               <Image
                 src="/mainpage/image/aCarrot.png"
                 alt="carrot cycle"
                 width={120}
                 height={120}
-                className="h-14 w-14 object-contain sm:h-18 sm:w-18"
+                className="h-12 w-12 object-contain sm:h-16 sm:w-16 lg:h-20 lg:w-20"
               />
-              <p className="-mt-1 text-xl font-semibold text-slate-800 sm:text-[1.4rem]">1 Cycle</p>
+              <p className="-mt-1 text-lg font-semibold text-slate-800 sm:text-xl lg:text-2xl">1 Cycle</p>
             </div>
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <CycleItem color="#ff3d30" title="Focus" subtitle="ทำงานอย่างตั้งใจ" value="25 นาที" />
           <CycleItem color="#82d21e" title="Short Break" subtitle="พักสั้น ๆ รีเซ็ตสมาธิ" value="5 นาที" />
           <CycleItem color="#ffbe18" title="Long Rest" subtitle="พักยาว ชาร์จพลังใจ" value="30 นาที" />
-          <div className="rounded-[20px] border border-emerald-100 bg-[linear-gradient(180deg,#f9fff6_0%,#f3ffef_100%)] px-4 py-3 text-sm font-medium text-[#46a329] sm:text-[0.95rem]">
+          <div className="rounded-[20px] border border-emerald-100 bg-[linear-gradient(180deg,#f9fff6_0%,#f3ffef_100%)] px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-[#46a329]">
             💡 แนะนำ: ทำ 4 รอบ แล้วพักยาว 30 นาที 🍃
           </div>
         </div>
@@ -472,17 +472,17 @@ function EmotionSection() {
         <h2 className="text-[1.15rem] font-semibold text-slate-900 sm:text-[1.35rem]">Emotion State</h2>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-1 2xl:grid-cols-[1fr_0.92fr]">
+      <div className="mt-4 grid gap-3 sm:gap-4 grid-cols-1 lg:grid-cols-2">
         <div className="rounded-[22px] border border-slate-100 bg-[radial-gradient(circle_at_center,#ffffff_0%,#fbfdff_100%)] p-3 sm:p-4">
-          <div className="relative mx-auto h-[200px] max-w-[260px] rounded-full bg-[conic-gradient(from_90deg,rgba(251,191,36,0.18)_0deg,rgba(34,197,94,0.14)_90deg,rgba(59,130,246,0.14)_180deg,rgba(239,68,68,0.16)_270deg,rgba(251,191,36,0.18)_360deg)] sm:h-[250px] sm:max-w-[300px]">
+          <div className="relative mx-auto h-[160px] max-w-full rounded-full bg-[conic-gradient(from_90deg,rgba(251,191,36,0.18)_0deg,rgba(34,197,94,0.14)_90deg,rgba(59,130,246,0.14)_180deg,rgba(239,68,68,0.16)_270deg,rgba(251,191,36,0.18)_360deg)] sm:h-[200px] lg:h-[240px]">
             <div className="absolute inset-0 rounded-full border border-slate-100" />
-            <div className="absolute left-1/2 top-4 -translate-x-1/2 text-center text-xs text-slate-600 sm:text-sm">
+            <div className="absolute left-1/2 top-2 sm:top-3 -translate-x-1/2 text-center text-[10px] sm:text-xs text-slate-600">
               <p className="font-medium">Valence (ความรู้สึก)</p>
               <p>ดี</p>
             </div>
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-slate-600 sm:text-sm">เศร้า</div>
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-600 sm:left-3 sm:text-sm">Unmotivated</div>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-600 sm:right-3 sm:text-sm">Motivate</div>
+            <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs text-slate-600">เศร้า</div>
+            <div className="absolute left-1.5 sm:left-2.5 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] text-slate-600">Unmotivated</div>
+            <div className="absolute right-1.5 sm:right-2.5 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] text-slate-600">Motivate</div>
             <div className="absolute left-1/2 top-1/2 h-px w-[78%] -translate-x-1/2 bg-slate-300" />
             <div className="absolute left-1/2 top-1/2 h-[78%] w-px -translate-x-1/2 -translate-y-1/2 bg-slate-300" />
 
@@ -494,19 +494,19 @@ function EmotionSection() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <div className="rounded-[22px] border border-slate-100 bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+        <div className="flex flex-col gap-2 sm:gap-3">
+          <div className="rounded-[22px] border border-slate-100 bg-white p-3 sm:p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
             {emotionLegend.map((item) => (
-              <div key={item.key} className="flex items-center gap-3 border-b border-slate-100 py-2.5 last:border-b-0">
-                <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: item.color }} />
-                <div className="flex-1">
-                  <p className="text-base font-medium text-slate-800 sm:text-[1.02rem]">{item.label}</p>
-                  <p className="text-xs text-slate-500 sm:text-sm">{item.note}</p>
+              <div key={item.key} className="flex items-center gap-2 sm:gap-3 border-b border-slate-100 py-2 sm:py-2.5 last:border-b-0">
+                <span className="h-3 w-3 shrink-0 rounded-full sm:h-3.5 sm:w-3.5" style={{ backgroundColor: item.color }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm sm:text-base font-medium text-slate-800">{item.label}</p>
+                  <p className="text-xs text-slate-500">{item.note}</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="rounded-[20px] border border-emerald-100 bg-[linear-gradient(180deg,#f7fff7_0%,#f0ffef_100%)] px-4 py-3 text-sm font-medium text-[#319541] sm:text-[0.95rem]">
+          <div className="rounded-[20px] border border-emerald-100 bg-[linear-gradient(180deg,#f7fff7_0%,#f0ffef_100%)] px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-[#319541]">
             💚 ตรวจสอบอารมณ์ของคุณสม่ำเสมอ เพื่อให้เข้าใจตัวเองมากขึ้น
           </div>
         </div>
