@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import BluetoothPanel from "@/components/dashboard/bluetooth-panel";
+import type { DeviceReadingPayload } from "@/lib/backend/focus-types";
 
 type FocusSource = "device" | "manual";
 
@@ -9,17 +11,6 @@ const PRESET_MINUTES = [15, 25, 45, 60];
 
 const chartPoints = [34, 46, 70, 25, 75, 86, 42, 63, 72, 28, 81, 70, 30, 50, 61, 44, 37, 61];
 const chartTimes = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00"];
-const timeline = [
-  { state: "focus", icon: "🥕" },
-  { state: "short_break", icon: "🍃" },
-  { state: "focus", icon: "🥕" },
-  { state: "short_break", icon: "🍃" },
-  { state: "focus", icon: "🥕" },
-  { state: "short_break", icon: "🍃" },
-  { state: "focus", icon: "🥕" },
-  { state: "long_rest", icon: "☀️" },
-];
-
 const emotionLegend = [
   { key: "happy", label: "สนุก", note: "กระตือรือร้น มีความสุข", color: "#f9be16", image: "/dashboard/Fun.png" },
   { key: "relaxed", label: "ผ่อนคลาย", note: "นิ่ง สบายใจ", color: "#27b14b", image: "/dashboard/Relaxed.png" },
@@ -34,6 +25,8 @@ export default function DashboardMock() {
   const [remainingSec, setRemainingSec] = useState(0);
   const [selectedMin, setSelectedMin] = useState(25);
   const [lastSource, setLastSource] = useState<FocusSource>("manual");
+  const [latestDeviceReading, setLatestDeviceReading] = useState<DeviceReadingPayload | null>(null);
+  const [focusScoreHistory, setFocusScoreHistory] = useState<number[]>(chartPoints);
 
   useEffect(() => {
     if (!isLocked || remainingSec <= 0) return;
@@ -51,6 +44,12 @@ export default function DashboardMock() {
 
     return () => window.clearInterval(timer);
   }, [isLocked, remainingSec]);
+
+  useEffect(() => {
+    const score = latestDeviceReading?.focus?.score;
+    if (typeof score !== "number") return;
+    setFocusScoreHistory((prev) => [...prev.slice(-17), score]);
+  }, [latestDeviceReading]);
 
   const minutes = Math.floor(remainingSec / 60)
     .toString()
@@ -83,7 +82,7 @@ export default function DashboardMock() {
             </header>
 
             <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 w-full sm:w-auto">
-              <TopSummaryCard />
+              <TopSummaryCard latestDeviceReading={latestDeviceReading} />
               <StartFocusCard
                 onManualStart={() => setIsModalOpen(true)}
                 onMockStart={() => activateFocus(20 * 60, "device")}
@@ -93,42 +92,46 @@ export default function DashboardMock() {
 
           <div className="grid gap-3 lg:gap-5 grid-cols-1 lg:grid-cols-3">
             <div className="space-y-3 lg:space-y-4 lg:col-span-2">
-              <FocusScoreSection />
+              <FocusScoreSection
+                latestDeviceReading={latestDeviceReading}
+                focusScores={focusScoreHistory}
+              />
+              <BluetoothPanel onLatestReading={setLatestDeviceReading} />
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <MetricCard
                   icon="/dashboard/sessions_today.png"
-                  title="Sessions Today"
-                  value="5"
-                  unit="รอบ"
+                  title="Motion Level"
+                  value={formatDecimal(latestDeviceReading?.sensors?.motion_level, 3)}
+                  unit=""
                   accent="green"
-                  footer="เพิ่มขึ้น 2 จากเมื่อวาน"
+                  footer={`Touch ${latestDeviceReading?.sensors?.touch_count ?? "-"} ครั้ง`}
                 />
                 <MetricCard
                   icon="/dashboard/focus_time.png"
-                  title="Focus Time"
-                  value="2 ชม. 05"
-                  unit="นาที"
+                  title="Focus Probability"
+                  value={formatPercent(latestDeviceReading?.focus?.probability)}
+                  unit="%"
                   accent="red"
-                  footer="เป้าหมาย 3 ชม."
-                  progress={69}
+                  footer={`model: ${latestDeviceReading?.focus?.model_version ?? "-"}`}
+                  progress={toProgress(latestDeviceReading?.focus?.probability)}
                 />
                 <MetricCard
                   icon="/dashboard/break_time.png"
-                  title="Break Time"
-                  value="45"
-                  unit="นาที"
+                  title="Distraction"
+                  value={formatPercent(latestDeviceReading?.focus?.distraction_probability)}
+                  unit="%"
                   accent="green"
-                  footer="เหมาะสม"
-                  progress={83}
+                  footer={`confidence: ${formatPercent(latestDeviceReading?.focus?.confidence)}%`}
+                  progress={toProgress(latestDeviceReading?.focus?.distraction_probability)}
                 />
                 <MetricCard
                   icon="/dashboard/current_state.png"
                   title="Current State"
-                  value="ปกติ"
+                  value={getCurrentStateLabel(latestDeviceReading)}
                   unit=""
                   accent="blue"
-                  footer="สมดุลดี"
+                  footer={getCurrentStateNote(latestDeviceReading)}
                 />
               </div>
 
@@ -144,10 +147,10 @@ export default function DashboardMock() {
                   <div className="w-full sm:max-w-xs rounded-[16px] bg-white/92 p-2.5 sm:p-3 shadow-[0_12px_24px_rgba(72,138,255,0.12)] backdrop-blur-sm">
                     <div className="text-xl text-sky-300">"</div>
                     <p className="-mt-1 text-sm sm:text-base font-medium leading-snug text-slate-800">
-                      วันนี้คุณทำได้ดีมากเลย!
+                      {getInsightHeadline(latestDeviceReading)}
                     </p>
                     <p className="mt-1.5 text-xs sm:text-sm text-slate-600">
-                      สานต่อสิ่งดี ๆ ต่อวันนี้ ๆ ให้กับคุณนะ
+                      {getInsightNote(latestDeviceReading)}
                     </p>
                   </div>
                   <Image
@@ -163,7 +166,7 @@ export default function DashboardMock() {
 
             <div className="space-y-3 lg:space-y-4 lg:col-span-1">
               <FocusCycleSection />
-              <EmotionSection />
+              <EmotionSection latestDeviceReading={latestDeviceReading} />
             </div>
           </div>
         </div>
@@ -246,14 +249,16 @@ export default function DashboardMock() {
   );
 }
 
-function TopSummaryCard() {
+function TopSummaryCard({ latestDeviceReading }: { latestDeviceReading?: DeviceReadingPayload | null }) {
   return (
     <section className="flex min-h-16 w-full items-center gap-2 sm:gap-3 rounded-[12px] border border-slate-100 bg-white p-2 sm:p-2.5 shadow-[0_6px_16px_rgba(15,23,42,0.04)]">
       <Image src="/dashboard/today_focus.png" alt="today focus" width={48} height={48} className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10" />
       <div className="flex-1 min-w-0">
         <p className="text-xs sm:text-sm font-medium leading-tight text-slate-500">Today Focus Score</p>
         <div className="mt-0.5 flex items-end gap-1">
-          <span className="text-base sm:text-xl font-semibold leading-none text-[#28bf41]">72</span>
+          <span className="text-base sm:text-xl font-semibold leading-none text-[#28bf41]">
+            {latestDeviceReading?.focus.score ?? 72}
+          </span>
           <span className="text-xs sm:text-sm font-medium text-slate-500">/100</span>
         </div>
       </div>
@@ -303,12 +308,18 @@ function StartFocusCard({
   );
 }
 
-function FocusScoreSection() {
+function FocusScoreSection({
+  latestDeviceReading,
+  focusScores,
+}: {
+  latestDeviceReading: DeviceReadingPayload | null;
+  focusScores: number[];
+}) {
   const width = 720;
   const height = 300;
   const padding = 34;
-  const stepX = (width - padding * 2) / (chartPoints.length - 1);
-  const points = chartPoints.map((value, index) => {
+  const stepX = (width - padding * 2) / (focusScores.length - 1);
+  const points = focusScores.map((value, index) => {
     const x = padding + index * stepX;
     const y = height - padding - (value / 100) * (height - padding * 2);
     return { x, y, value };
@@ -328,7 +339,7 @@ function FocusScoreSection() {
           </div>
         </div>
         <div className="rounded-full border border-emerald-100 bg-emerald-50 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold text-[#28bf41] whitespace-nowrap">
-          ↗ AVG 72
+          ↗ AVG {Math.round(focusScores.reduce((acc, cur) => acc + cur, 0) / focusScores.length)}
         </div>
       </div>
 
@@ -376,28 +387,17 @@ function FocusScoreSection() {
           ))}
         </svg>
 
-        <div className="mt-2 sm:mt-3 grid grid-cols-6 sm:grid-cols-8 gap-1 sm:gap-1.5 rounded-[10px] bg-white">
-          {timeline.map((item, index) => (
-            <div
-              key={`${item.state}-${index}`}
-              className={`flex h-5 sm:h-6 lg:h-7 items-center justify-center rounded-md text-xs sm:text-sm shadow-[inset_0_-2px_0_rgba(255,255,255,0.24)] ${
-                item.state === "focus"
-                  ? "bg-[#ff5037]"
-                  : item.state === "short_break"
-                  ? "bg-[#83d225]"
-                  : "bg-[#ffbc17]"
-              } text-white`}
-            >
-              {item.icon}
-            </div>
-          ))}
-        </div>
-
         <div className="mt-2 sm:mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-xs sm:text-sm text-slate-700">
           <LegendDot color="#ff5037" label="Focus (25 นาที)" />
           <LegendDot color="#83d225" label="Short Break (5 นาที)" />
           <LegendDot color="#ffbc17" label="Long Rest (30 นาที)" />
         </div>
+        <p className="mt-2 text-xs text-slate-500">
+          ล่าสุด: score {latestDeviceReading?.focus?.score ?? "-"} | เวลา{" "}
+          {latestDeviceReading?.recorded_at
+            ? new Date(latestDeviceReading.recorded_at).toLocaleTimeString()
+            : "-"}
+        </p>
       </div>
     </section>
   );
@@ -463,7 +463,13 @@ function FocusCycleSection() {
   );
 }
 
-function EmotionSection() {
+function EmotionSection({
+  latestDeviceReading,
+}: {
+  latestDeviceReading?: DeviceReadingPayload | null;
+}) {
+  const latestEmotionLabel = latestDeviceReading?.emotion?.label ?? "normal";
+
   return (
     <section className="rounded-[20px] border border-emerald-50 bg-white p-3 sm:p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)]">
       <div className="flex items-center gap-2 sm:gap-3">
@@ -475,22 +481,28 @@ function EmotionSection() {
         {/* Emotion Circle */}
         <div className="rounded-[18px] border border-slate-100 bg-[radial-gradient(circle_at_center,#ffffff_0%,#fbfdff_100%)] p-3 sm:p-4 lg:p-5 flex justify-center">
           <div className="relative h-40 sm:h-56 lg:h-64 w-40 sm:w-56 lg:w-64 rounded-full bg-[conic-gradient(from_90deg,rgba(251,191,36,0.18)_0deg,rgba(34,197,94,0.14)_90deg,rgba(59,130,246,0.14)_180deg,rgba(239,68,68,0.16)_270deg,rgba(251,191,36,0.18)_360deg)]">
-            <div className="absolute inset-0 rounded-full border border-slate-100" />
-            <div className="absolute left-1/2 top-2 sm:top-3 lg:top-4 -translate-x-1/2 text-center text-[9px] sm:text-xs lg:text-sm text-slate-600">
+            <div className="absolute inset-0 z-0 rounded-full border border-slate-100" />
+            <div className="absolute left-1/2 top-2 z-20 sm:top-3 lg:top-4 -translate-x-1/2 text-center text-[9px] sm:text-xs lg:text-sm text-slate-600">
               <p className="font-medium">Valence (ความรู้สึก)</p>
               <p>ดี</p>
             </div>
-            <div className="absolute bottom-2 sm:bottom-3 lg:bottom-4 left-1/2 -translate-x-1/2 text-[9px] sm:text-xs lg:text-sm text-slate-600">เศร้า</div>
-            <div className="absolute left-1.5 sm:left-2 lg:left-3 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] lg:text-xs text-slate-600">Unmotivated</div>
-            <div className="absolute right-1.5 sm:right-2 lg:right-3 top-1/2 -translate-y-1/2 text-[8px] sm:text-[10px] lg:text-xs text-slate-600">Motivate</div>
-            <div className="absolute left-1/2 top-1/2 h-px w-[78%] -translate-x-1/2 bg-slate-300" />
-            <div className="absolute left-1/2 top-1/2 h-[78%] w-px -translate-x-1/2 -translate-y-1/2 bg-slate-300" />
+            <div className="absolute bottom-2 left-1/2 z-20 -translate-x-1/2 text-[9px] sm:bottom-3 sm:text-xs lg:bottom-4 lg:text-sm text-slate-600">เศร้า</div>
+            <div className="absolute left-1.5 top-1/2 z-20 -translate-y-1/2 text-[8px] sm:left-2 sm:text-[10px] lg:left-3 lg:text-xs text-slate-600">Unmotivated</div>
+            <div className="absolute right-1.5 top-1/2 z-20 -translate-y-1/2 text-[8px] sm:right-2 sm:text-[10px] lg:right-3 lg:text-xs text-slate-600">Motivate</div>
+            <div className="absolute left-1/2 top-1/2 z-10 h-px w-[78%] -translate-x-1/2 bg-slate-300" />
+            <div className="absolute left-1/2 top-1/2 z-10 h-[78%] w-px -translate-x-1/2 -translate-y-1/2 bg-slate-300" />
 
             <EmotionPoint label="ผ่อนคลาย" color="#27b14b" x="28%" y="35%" />
             <EmotionPoint label="สนุก" color="#f9be16" x="74%" y="40%" />
             <EmotionPoint label="เบื่อ" color="#3b82f6" x="32%" y="70%" />
             <EmotionPoint label="เครียด" color="#ef4444" x="70%" y="71%" />
-            <EmotionPoint label="Normal" color="#8bc34a" x="56%" y="54%" active />
+            <EmotionPoint
+              label={emotionLegend.find((item) => item.key === latestEmotionLabel)?.label ?? "Normal"}
+              color={emotionLegend.find((item) => item.key === latestEmotionLabel)?.color ?? "#8bc34a"}
+              x="56%"
+              y="54%"
+              active
+            />
           </div>
         </div>
 
@@ -512,6 +524,45 @@ function EmotionSection() {
       </div>
     </section>
   );
+}
+
+function getCurrentStateLabel(latestDeviceReading: DeviceReadingPayload | null) {
+  if (!latestDeviceReading) return "ปกติ";
+  return latestDeviceReading.focus?.state ?? "ปกติ";
+}
+
+function getCurrentStateNote(latestDeviceReading: DeviceReadingPayload | null) {
+  if (!latestDeviceReading) return "รอข้อมูลจากอุปกรณ์";
+  return `อารมณ์ ${latestDeviceReading.emotion?.label ?? "ไม่ทราบ"}`;
+}
+
+function getInsightHeadline(latestDeviceReading: DeviceReadingPayload | null) {
+  if (!latestDeviceReading) return "วันนี้คุณทำได้ดีมากเลย!";
+  const focusScore = latestDeviceReading.focus?.score;
+  if (typeof focusScore !== "number") return "ได้รับข้อมูลจากอุปกรณ์แล้ว";
+  if (focusScore >= 75) return "สมาธิกำลังดี รักษาจังหวะนี้ไว้";
+  if (focusScore >= 50) return "เริ่มมีโฟกัสดีขึ้นแล้ว";
+  return "ลองพักสั้น ๆ แล้วกลับมาเริ่มใหม่";
+}
+
+function getInsightNote(latestDeviceReading: DeviceReadingPayload | null) {
+  if (!latestDeviceReading) return "สานต่อสิ่งดี ๆ ต่อวันนี้ ๆ ให้กับคุณนะ";
+  return `ล่าสุด ${latestDeviceReading.emotion?.label ?? "ไม่ทราบ"} | motion ${latestDeviceReading.sensors?.motion_level ?? "-"}`;
+}
+
+function formatPercent(value: number | undefined) {
+  if (typeof value !== "number") return "-";
+  return Math.round(value * 100).toString();
+}
+
+function formatDecimal(value: number | undefined, fractionDigits: number) {
+  if (typeof value !== "number") return "-";
+  return value.toFixed(fractionDigits);
+}
+
+function toProgress(value: number | undefined) {
+  if (typeof value !== "number") return undefined;
+  return Math.max(0, Math.min(100, Math.round(value * 100)));
 }
 
 function MetricCard({
@@ -613,7 +664,7 @@ function EmotionPoint({
   active?: boolean;
 }) {
   return (
-    <div className="absolute -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: x, top: y }}>
+    <div className="absolute z-30 -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: x, top: y }}>
       <div
         className={`mx-auto rounded-full ${active ? "h-6 w-6 ring-4 ring-[#a7ef7d]/55 sm:h-8 sm:w-8 lg:h-10 lg:w-10" : "h-3 w-3 sm:h-3.5 sm:w-3.5 lg:h-4 lg:w-4"}`}
         style={{ backgroundColor: color }}
