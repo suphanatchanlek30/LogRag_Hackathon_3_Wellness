@@ -107,6 +107,22 @@ npm run dev
 - `npm run start` รัน production
 - `npm run lint` ตรวจ lint
 
+## Deploy บน Vercel
+
+1. Push โค้ดขึ้น GitHub/GitLab/Bitbucket
+2. ไปที่ Vercel แล้ว `Add New Project` จาก repo นี้
+3. Framework จะตรวจจับเป็น Next.js อัตโนมัติ
+4. ใส่ Environment Variables ใน Vercel (Project Settings -> Environment Variables)
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+5. กด Deploy
+
+หมายเหตุ:
+- API ใน `app/api/*` จะรันเป็น Serverless Functions บน Vercel
+- ค่า `SUPABASE_SERVICE_ROLE_KEY` ห้ามใส่ `NEXT_PUBLIC_`
+- ใช้ไฟล์ `.env.example` เป็น template สำหรับตรวจชื่อ env ให้ตรงกัน
+
 ## หมายเหตุ
 
 - โปรเจกต์นี้ใช้ Next.js รุ่นใหม่ ควรอิง docs ใน `node_modules/next/dist/docs/` ก่อนแก้โค้ดโครงสร้างใหญ่
