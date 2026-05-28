@@ -56,10 +56,10 @@ export function parseDeviceReadingPayload(input: unknown): DeviceReadingPayload 
   const sensors = (body.sensors as Record<string, unknown> | undefined) ?? {};
 
   return {
-    device_code: body.device_code,
-    recorded_at: body.recorded_at,
+    device_code: body.device_code as string,
+    recorded_at: body.recorded_at as string,
     focus: {
-      score: focus.score,
+      score: focus.score as number,
       state: focusState,
       probability: toNumberOrUndefined(focus.probability),
       distraction_probability: toNumberOrUndefined(focus.distraction_probability),
@@ -67,8 +67,8 @@ export function parseDeviceReadingPayload(input: unknown): DeviceReadingPayload 
       model_version: toStringOrUndefined(focus.model_version),
     },
     emotion: {
-      valence: emotion.valence,
-      arousal: emotion.arousal,
+      valence: emotion.valence as number,
+      arousal: emotion.arousal as number,
       label: emotionLabel,
       confidence: toNumberOrUndefined(emotion.confidence),
       model_version: toStringOrUndefined(emotion.model_version),
@@ -95,7 +95,7 @@ export function parseSessionStartBody(input: unknown) {
     throw new Error("device_code is required");
   }
   if (!isIsoDateString(body.started_at)) throw new Error("started_at must be ISO datetime");
-  return { device_code: body.device_code, started_at: body.started_at };
+  return { device_code: body.device_code, started_at: body.started_at as string };
 }
 
 export function parseSessionEndBody(input: unknown) {
@@ -103,7 +103,7 @@ export function parseSessionEndBody(input: unknown) {
   const body = input as Record<string, unknown>;
   if (!isIsoDateString(body.ended_at)) throw new Error("ended_at must be ISO datetime");
   const status = ensureEnum(body.status, SESSION_STATUSES, "status") as SessionStatus;
-  return { ended_at: body.ended_at, status };
+  return { ended_at: body.ended_at as string, status };
 }
 
 export function parseCycleStartBody(input: unknown) {
@@ -125,10 +125,10 @@ export function parseCycleStartBody(input: unknown) {
   return {
     device_code: body.device_code,
     session_id: body.session_id,
-    cycle_no: body.cycle_no,
+    cycle_no: body.cycle_no as number,
     phase,
-    planned_duration_minutes: body.planned_duration_minutes,
-    started_at: body.started_at,
+    planned_duration_minutes: body.planned_duration_minutes as number,
+    started_at: body.started_at as string,
   };
 }
 
@@ -145,8 +145,8 @@ export function parseCycleEndBody(input: unknown) {
     "completion_status"
   ) as CycleCompletionStatus;
   return {
-    ended_at: body.ended_at,
-    actual_duration_seconds: body.actual_duration_seconds,
+    ended_at: body.ended_at as string,
+    actual_duration_seconds: body.actual_duration_seconds as number,
     completion_status,
   };
 }
