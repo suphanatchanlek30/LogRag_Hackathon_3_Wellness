@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 type FocusPayload = {
   durationSec: number;
   source: "device" | "manual";
-  label: string;
 };
 
 const PRESET_MINUTES = [15, 25, 45, 60];
@@ -20,6 +19,7 @@ export default function FocusLockPanel() {
   useEffect(() => {
     if (!isLocked || remainingSec <= 0) return;
 
+    // ลดเวลาทุก 1 วินาทีจนกว่าจะครบ
     const timer = window.setInterval(() => {
       setRemainingSec((prev) => {
         if (prev <= 1) {
@@ -55,7 +55,6 @@ export default function FocusLockPanel() {
     activateFocus({
       durationSec: selectedMin * 60,
       source: "manual",
-      label: `Manual ${selectedMin}m`,
     });
   }
 
@@ -64,7 +63,6 @@ export default function FocusLockPanel() {
     activateFocus({
       durationSec: 20 * 60,
       source: "device",
-      label: "Device Trigger 20m",
     });
   }
 
