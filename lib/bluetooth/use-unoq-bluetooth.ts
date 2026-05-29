@@ -259,9 +259,14 @@ function getDeviceReadings(value: unknown): DeviceReadingPayload[] {
   }
 
   if (isDeviceReadingBatchPayload(unwrapped)) {
-    return unwrapped.readings
-      .map((item) => (isDeviceReadingLike(item) ? normalizeReading(item) : null))
-      .filter((item): item is DeviceReadingPayload => Boolean(item));
+    const readings: DeviceReadingPayload[] = [];
+    for (const item of unwrapped.readings) {
+      if (!isDeviceReadingLike(item)) continue;
+      const normalized = normalizeReading(item);
+      if (!normalized) continue;
+      readings.push(normalized);
+    }
+    return readings;
   }
 
   if (isDeviceReadingLike(value)) {
@@ -270,9 +275,14 @@ function getDeviceReadings(value: unknown): DeviceReadingPayload[] {
   }
 
   if (isDeviceReadingBatchPayload(value)) {
-    return value.readings
-      .map((item) => (isDeviceReadingLike(item) ? normalizeReading(item) : null))
-      .filter((item): item is DeviceReadingPayload => Boolean(item));
+    const readings: DeviceReadingPayload[] = [];
+    for (const item of value.readings) {
+      if (!isDeviceReadingLike(item)) continue;
+      const normalized = normalizeReading(item);
+      if (!normalized) continue;
+      readings.push(normalized);
+    }
+    return readings;
   }
 
   return [];
