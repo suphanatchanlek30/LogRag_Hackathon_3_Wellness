@@ -14,16 +14,28 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
     isConnected,
     deviceName,
     latestReading,
+    receivedChunks,
+    receivedLines,
+    parsedReadings,
     error,
     connect,
     disconnect,
     sendCommand,
   } = useUnoQBluetooth();
   const [commandStatus, setCommandStatus] = useState("");
+  const [mounted, setMounted] = useState(false);
+  const [pulseOn, setPulseOn] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!latestReading) return;
     onLatestReading?.(latestReading);
+    setPulseOn(true);
+    const timer = window.setTimeout(() => setPulseOn(false), 300);
+    return () => window.clearTimeout(timer);
   }, [latestReading, onLatestReading]);
 
   async function handleConnect() {
@@ -44,6 +56,13 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
     }
   }
 
+  const supportLabel = mounted ? (isSupported ? "พร้อมใช้งาน" : "ไม่รองรับ") : "กำลังตรวจสอบ";
+  const connectDisabled = !mounted || !isSupported || isConnected;
+  const isLive = isConnected && parsedReadings > 0;
+  const lastPacketTimeLabel = latestReading?.recorded_at
+    ? new Date(latestReading.recorded_at).toLocaleTimeString()
+    : "-";
+
   return (
     <section className="rounded-[20px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#f5fff3_100%)] p-4 shadow-[0_12px_30px_rgba(15,23,42,0.055)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -51,7 +70,23 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-600">
             Bluetooth
           </p>
-          <h2 className="mt-1 text-lg font-semibold text-slate-900">UNO Q Live Stream</h2>
+          <div className="mt-1 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-slate-900">UNO Q Live Stream</h2>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${
+                isLive
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-slate-200 bg-slate-50 text-slate-500"
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isLive ? (pulseOn ? "bg-emerald-500" : "bg-emerald-400") : "bg-slate-400"
+                }`}
+              />
+              {isLive ? "Live" : "Idle"}
+            </span>
+          </div>
           <p className="mt-1 text-sm text-slate-500">
             เชื่อม BLE กับอุปกรณ์เพื่อรับข้อมูลแบบเรียลไทม์
           </p>
@@ -61,7 +96,7 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
           <button
             type="button"
             onClick={handleConnect}
-            disabled={!isSupported || isConnected}
+            disabled={connectDisabled}
             className="rounded-2xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             {isConnected ? "Connected" : "Connect Bluetooth"}
@@ -86,9 +121,13 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <InfoCard label="Support" value={isSupported ? "พร้อมใช้งาน" : "ไม่รองรับ"} />
+        <InfoCard label="Support" value={supportLabel} />
         <InfoCard label="Status" value={isConnected ? "เชื่อมต่อแล้ว" : "ยังไม่เชื่อมต่อ"} />
         <InfoCard label="Device" value={deviceName || "UNOQ-LogRag"} />
+        <InfoCard label="Received Chunks" value={receivedChunks.toString()} />
+        <InfoCard label="Received Lines" value={receivedLines.toString()} />
+        <InfoCard label="Parsed Readings" value={parsedReadings.toString()} />
+        <InfoCard label="Last Packet" value={lastPacketTimeLabel} />
         <InfoCard
           label="Latest Focus"
           value={
@@ -108,7 +147,7 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
         />
       </div>
 
-      {!isSupported ? (
+      {mounted && !isSupported ? (
         <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
           Browser นี้ยังใช้ Web Bluetooth ไม่ได้ หรือไม่ได้รันบน HTTPS/localhost
         </p>
@@ -123,6 +162,10 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
           {commandStatus}
         </p>
       ) : null}
+      <p className="mt-4 text-xs text-slate-500">
+        สถานะสตรีม: {isConnected ? "เชื่อมต่อแล้ว" : "ยังไม่เชื่อมต่อ"} | packet ล่าสุด:{" "}
+        {lastPacketTimeLabel}
+      </p>
 
       {/* Keep payload preview hidden for cleaner connect-only UX.
       <div className="mt-4 rounded-[18px] border border-slate-100 bg-white/90 p-3">

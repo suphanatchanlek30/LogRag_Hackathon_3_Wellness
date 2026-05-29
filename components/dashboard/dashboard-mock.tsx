@@ -8,6 +8,7 @@ import type { DeviceReadingPayload } from "@/lib/backend/focus-types";
 type FocusSource = "device" | "manual";
 
 const PRESET_MINUTES = [15, 25, 45, 60];
+const DEFAULT_DASHBOARD_USER_ID = "11111111-1111-1111-1111-111111111111";
 
 const chartTimes = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00"];
 const emotionLegend = [
@@ -26,6 +27,8 @@ export default function DashboardMock() {
   const [lastSource, setLastSource] = useState<FocusSource>("manual");
   const [latestDeviceReading, setLatestDeviceReading] = useState<DeviceReadingPayload | null>(null);
   const [focusScoreHistory, setFocusScoreHistory] = useState<number[]>([]);
+  const [dbLoaded, setDbLoaded] = useState(false);
+  const [dashboardUserId, setDashboardUserId] = useState(DEFAULT_DASHBOARD_USER_ID);
 
   useEffect(() => {
     if (!isLocked || remainingSec <= 0) return;
@@ -44,6 +47,63 @@ export default function DashboardMock() {
     return () => window.clearInterval(timer);
   }, [isLocked, remainingSec]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const userIdFromQuery = params.get("user_id");
+    const userIdFromEnv = process.env.NEXT_PUBLIC_DASHBOARD_USER_ID;
+    setDashboardUserId(userIdFromQuery || userIdFromEnv || DEFAULT_DASHBOARD_USER_ID);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!dashboardUserId) return;
+
+    async function loadFromDatabase() {
+      try {
+        const dateKeys = [getLocalDateKey(), getUtcDateKey()];
+        const responses = await Promise.all(
+          dateKeys.map((date) =>
+            fetch(
+              `/api/readings?user_id=${encodeURIComponent(dashboardUserId)}&date=${encodeURIComponent(date)}`,
+              { method: "GET", cache: "no-store" }
+            )
+          )
+        );
+        const payloads = (await Promise.all(
+          responses.map(async (response) => {
+            const json = (await response.json()) as {
+              ok: boolean;
+              data?: { readings?: SensorReadingRow[] };
+            };
+            return response.ok && json.ok ? json.data?.readings ?? [] : [];
+          })
+        )) as SensorReadingRow[][];
+
+        const mergedRows = payloads
+          .flat()
+          .sort((a, b) => Date.parse(a.recorded_at) - Date.parse(b.recorded_at));
+        const uniqueRows = mergedRows.filter(
+          (row, index, arr) =>
+            index === arr.findIndex((item) => item.recorded_at === row.recorded_at)
+        );
+        const readings = uniqueRows.map(mapSensorRowToDeviceReading);
+        if (readings.length === 0 || cancelled) return;
+
+        const latest = readings[readings.length - 1];
+        setLatestDeviceReading(latest);
+        setFocusScoreHistory(readings.map((item) => item.focus.score).slice(-18));
+        setDbLoaded(true);
+      } catch {
+        // Ignore and keep waiting for BLE live data.
+      }
+    }
+
+    void loadFromDatabase();
+    return () => {
+      cancelled = true;
+    };
+  }, [dashboardUserId]);
+
   const minutes = Math.floor(remainingSec / 60)
     .toString()
     .padStart(2, "0");
@@ -61,6 +121,7 @@ export default function DashboardMock() {
   function handleLatestReading(reading: DeviceReadingPayload) {
     setLatestDeviceReading(reading);
     setFocusScoreHistory((prev) => [...prev.slice(-17), reading.focus.score]);
+    setDbLoaded(true);
   }
 
   return (
@@ -128,7 +189,7 @@ export default function DashboardMock() {
                   value={getCurrentStateLabel(latestDeviceReading)}
                   unit=""
                   accent="blue"
-                  footer={getCurrentStateNote(latestDeviceReading)}
+                  footer={`${getCurrentStateNote(latestDeviceReading)}${dbLoaded ? ` (DB/LIVE: ${dashboardUserId})` : ` (No DB: ${dashboardUserId})`}`}
                 />
               </div>
 
@@ -563,6 +624,99 @@ function formatDecimal(value: number | undefined, fractionDigits: number) {
 function toProgress(value: number | undefined) {
   if (typeof value !== "number") return undefined;
   return Math.max(0, Math.min(100, Math.round(value * 100)));
+}
+
+type SensorReadingRow = {
+  recorded_at: string;
+  device_code?: string | null;
+  focus_score: number;
+  focus_state: DeviceReadingPayload["focus"]["state"];
+  focus_probability?: number | null;
+  distraction_probability?: number | null;
+  model_confidence?: number | null;
+  model_version?: string | null;
+  heart_rate?: number | null;
+  motion_level?: number | null;
+  accel_x?: number | null;
+  accel_y?: number | null;
+  accel_z?: number | null;
+  gyro_x?: number | null;
+  gyro_y?: number | null;
+  gyro_z?: number | null;
+  pressure_level?: number | null;
+  touch_count?: number | null;
+  room_connected?: boolean | null;
+  room_source?: string | null;
+  room_updated_at?: string | null;
+  noise_level?: number | null;
+  light_lux?: number | null;
+  brightness?: number | null;
+  noise_state?: string | null;
+  light_state?: string | null;
+  room_score?: number | null;
+  room_state?: string | null;
+  room_recommendation?: string | null;
+};
+
+function mapSensorRowToDeviceReading(row: SensorReadingRow): DeviceReadingPayload {
+  return {
+    device_code: row.device_code ?? "UNOQ-001",
+    recorded_at: row.recorded_at,
+    focus: {
+      score: row.focus_score,
+      state: row.focus_state,
+      probability: row.focus_probability ?? undefined,
+      distraction_probability: row.distraction_probability ?? undefined,
+      confidence: row.model_confidence ?? undefined,
+      model_version: row.model_version ?? undefined,
+    },
+    emotion: {
+      // /api/readings does not include joined emotion row, keep neutral fallback.
+      valence: 0,
+      arousal: 0,
+      label: "normal",
+    },
+    sensors: {
+      heart_rate: row.heart_rate ?? undefined,
+      motion_level: row.motion_level ?? undefined,
+      accel_x: row.accel_x ?? undefined,
+      accel_y: row.accel_y ?? undefined,
+      accel_z: row.accel_z ?? undefined,
+      gyro_x: row.gyro_x ?? undefined,
+      gyro_y: row.gyro_y ?? undefined,
+      gyro_z: row.gyro_z ?? undefined,
+      pressure_level: row.pressure_level ?? undefined,
+      touch_count: row.touch_count ?? undefined,
+      noise_level: row.noise_level ?? undefined,
+      light_lux: row.light_lux ?? undefined,
+      brightness: row.brightness ?? undefined,
+    },
+    room: {
+      connected: row.room_connected ?? undefined,
+      source: row.room_source ?? undefined,
+      updated_at: row.room_updated_at ?? undefined,
+      noise_level: row.noise_level ?? undefined,
+      light_lux: row.light_lux ?? undefined,
+      brightness: row.brightness ?? undefined,
+      noise_state: row.noise_state ?? undefined,
+      light_state: row.light_state ?? undefined,
+      room_score: row.room_score ?? undefined,
+      room_state: row.room_state ?? undefined,
+      recommendation: row.room_recommendation ?? undefined,
+    },
+  };
+}
+
+function getLocalDateKey() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function getUtcDateKey() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function MetricCard({

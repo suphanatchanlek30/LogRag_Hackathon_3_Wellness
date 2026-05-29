@@ -13,6 +13,9 @@ type BluetoothState = {
   isConnected: boolean;
   deviceName: string;
   latestReading: DeviceReadingPayload | null;
+  receivedChunks: number;
+  receivedLines: number;
+  parsedReadings: number;
   error: string;
   connect: () => Promise<void>;
   disconnect: () => void;
@@ -21,14 +24,17 @@ type BluetoothState = {
 
 type DeviceReadingBatchPayload = {
   type?: string;
-  readings?: Partial<DeviceReadingPayload>[];
+  readings?: unknown[];
 };
 
 export function useUnoQBluetooth(): BluetoothState {
-  const [isSupported, setIsSupported] = useState(getBluetoothSupport);
+  const [isSupported, setIsSupported] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [deviceName, setDeviceName] = useState("");
   const [latestReading, setLatestReading] = useState<DeviceReadingPayload | null>(null);
+  const [receivedChunks, setReceivedChunks] = useState(0);
+  const [receivedLines, setReceivedLines] = useState(0);
+  const [parsedReadings, setParsedReadings] = useState(0);
   const [error, setError] = useState("");
 
   const deviceRef = useRef<BluetoothDevice | null>(null);
@@ -41,6 +47,7 @@ export function useUnoQBluetooth(): BluetoothState {
   const isDisconnectingRef = useRef(false);
 
   useEffect(() => {
+    setIsSupported(getBluetoothSupport());
     decoderRef.current = new TextDecoder();
     encoderRef.current = new TextEncoder();
 
@@ -71,7 +78,7 @@ export function useUnoQBluetooth(): BluetoothState {
     }
 
     const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
+      filters: [{ namePrefix: "UNOQ" }],
       optionalServices: [SERVICE_UUID],
     });
 
@@ -95,6 +102,7 @@ export function useUnoQBluetooth(): BluetoothState {
         const target = event.target as BluetoothRemoteGATTCharacteristic | null;
         const value = target?.value;
         if (!value || !decoderRef.current) return;
+        setReceivedChunks((prev) => prev + 1);
 
         bufferRef.current += decoderRef.current.decode(value, { stream: true });
         const lines = bufferRef.current.split("\n");
@@ -103,9 +111,10 @@ export function useUnoQBluetooth(): BluetoothState {
         for (const line of lines) {
           const trimmed = line.trim();
           if (!trimmed) continue;
+          setReceivedLines((prev) => prev + 1);
 
           try {
-            const parsed = JSON.parse(trimmed) as Partial<DeviceReadingPayload> | DeviceReadingBatchPayload;
+            const parsed = JSON.parse(trimmed) as unknown;
             const readings = getDeviceReadings(parsed);
             if (readings.length === 0) {
               throw new Error("BLE payload shape ไม่ถูกต้อง");
@@ -113,6 +122,7 @@ export function useUnoQBluetooth(): BluetoothState {
             for (const reading of readings) {
               setLatestReading(reading);
               await postDeviceReading(reading);
+              setParsedReadings((prev) => prev + 1);
             }
             setError("");
           } catch (parseError) {
@@ -197,6 +207,9 @@ export function useUnoQBluetooth(): BluetoothState {
     deviceRef.current = null;
     setIsConnected(false);
     setDeviceName(disconnectGatt ? "" : device?.name ?? "");
+    setReceivedChunks(0);
+    setReceivedLines(0);
+    setParsedReadings(0);
   }
 
   return {
@@ -204,6 +217,9 @@ export function useUnoQBluetooth(): BluetoothState {
     isConnected,
     deviceName,
     latestReading,
+    receivedChunks,
+    receivedLines,
+    parsedReadings,
     error,
     connect,
     disconnect,
@@ -235,34 +251,57 @@ function toBluetoothErrorMessage(error: unknown) {
 }
 
 function getDeviceReadings(value: unknown): DeviceReadingPayload[] {
-  if (isDeviceReadingPayload(value)) {
-    return [value];
+  const unwrapped = unwrapPayload(value);
+
+  if (isDeviceReadingLike(unwrapped)) {
+    const normalized = normalizeReading(unwrapped);
+    return normalized ? [normalized] : [];
+  }
+
+  if (isDeviceReadingBatchPayload(unwrapped)) {
+    return unwrapped.readings
+      .map((item) => (isDeviceReadingLike(item) ? normalizeReading(item) : null))
+      .filter((item): item is DeviceReadingPayload => Boolean(item));
+  }
+
+  if (isDeviceReadingLike(value)) {
+    const normalized = normalizeReading(value);
+    return normalized ? [normalized] : [];
   }
 
   if (isDeviceReadingBatchPayload(value)) {
-    return value.readings.filter(isDeviceReadingPayload);
+    return value.readings
+      .map((item) => (isDeviceReadingLike(item) ? normalizeReading(item) : null))
+      .filter((item): item is DeviceReadingPayload => Boolean(item));
   }
 
   return [];
 }
 
-function isDeviceReadingPayload(value: unknown): value is DeviceReadingPayload {
-  const reading = value as Partial<DeviceReadingPayload>;
+function unwrapPayload(value: unknown): unknown {
+  if (!value || typeof value !== "object") return value;
+  const record = value as Record<string, unknown>;
+  if (record.payload) return record.payload;
+  if (record.data) return record.data;
+  if (record.reading) return record.reading;
+  return value;
+}
+
+function isDeviceReadingLike(value: unknown): value is Partial<DeviceReadingPayload> {
+  const reading = value as Record<string, unknown>;
   return Boolean(
     reading &&
       typeof reading.device_code === "string" &&
       typeof reading.recorded_at === "string" &&
       reading.focus &&
-      typeof reading.focus.score === "number" &&
-      typeof reading.focus.state === "string" &&
-      reading.emotion &&
-      typeof reading.emotion.label === "string"
+      typeof (reading.focus as Record<string, unknown>).score === "number" &&
+      typeof (reading.focus as Record<string, unknown>).state === "string"
   );
 }
 
 function isDeviceReadingBatchPayload(value: unknown): value is {
   type?: string;
-  readings: Partial<DeviceReadingPayload>[];
+  readings: unknown[];
 } {
   const batch = value as DeviceReadingBatchPayload;
   return Boolean(
@@ -271,4 +310,30 @@ function isDeviceReadingBatchPayload(value: unknown): value is {
       Array.isArray(batch.readings) &&
       (!batch.type || batch.type === "device_reading_batch")
   );
+}
+
+function normalizeReading(reading: Partial<DeviceReadingPayload>) {
+  if (!reading.device_code || !reading.recorded_at || !reading.focus) return null;
+  if (typeof reading.focus.score !== "number" || typeof reading.focus.state !== "string") return null;
+
+  return {
+    device_code: reading.device_code,
+    recorded_at: reading.recorded_at,
+    focus: {
+      score: reading.focus.score,
+      state: reading.focus.state,
+      probability: reading.focus.probability,
+      distraction_probability: reading.focus.distraction_probability,
+      confidence: reading.focus.confidence,
+      model_version: reading.focus.model_version,
+    },
+    emotion: {
+      valence: reading.emotion?.valence ?? 0,
+      arousal: reading.emotion?.arousal ?? 0,
+      label: reading.emotion?.label ?? "normal",
+      confidence: reading.emotion?.confidence,
+      model_version: reading.emotion?.model_version,
+    },
+    sensors: reading.sensors,
+  } satisfies DeviceReadingPayload;
 }
