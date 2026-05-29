@@ -97,6 +97,15 @@ export default function BluetoothPanel({ onLatestReading }: BluetoothPanelProps)
               : "-"
           }
         />
+        <InfoCard label="Room" value={latestReading?.room?.room_state ?? "No Nano33"} />
+        <InfoCard
+          label="Room Score"
+          value={
+            typeof latestReading?.room?.room_score === "number"
+              ? `${latestReading.room.room_score}/100`
+              : "-"
+          }
+        />
       </div>
 
       {!isSupported ? (

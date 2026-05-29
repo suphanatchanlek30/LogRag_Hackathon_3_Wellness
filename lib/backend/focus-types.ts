@@ -44,5 +44,21 @@ export type DeviceReadingPayload = {
     gyro_z?: number;
     pressure_level?: number;
     touch_count?: number;
+    noise_level?: number;
+    light_lux?: number;
+    brightness?: number;
+  };
+  room?: {
+    source?: string;
+    connected?: boolean;
+    updated_at?: string;
+    noise_level?: number;
+    light_lux?: number;
+    brightness?: number;
+    noise_state?: string;
+    light_state?: string;
+    room_score?: number;
+    room_state?: string;
+    recommendation?: string;
   };
 };

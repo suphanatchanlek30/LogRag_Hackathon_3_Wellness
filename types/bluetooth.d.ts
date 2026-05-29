@@ -3,6 +3,7 @@ interface BluetoothRequestDeviceFilter {
 }
 
 interface BluetoothRequestDeviceOptions {
+  acceptAllDevices?: boolean;
   filters?: BluetoothRequestDeviceFilter[];
   optionalServices?: string[];
 }

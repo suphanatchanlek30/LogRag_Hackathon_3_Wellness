@@ -54,6 +54,7 @@ export function parseDeviceReadingPayload(input: unknown): DeviceReadingPayload 
   const emotionLabel = ensureEnum(emotion.label, EMOTION_LABELS, "emotion.label");
 
   const sensors = (body.sensors as Record<string, unknown> | undefined) ?? {};
+  const room = (body.room as Record<string, unknown> | undefined) ?? undefined;
 
   return {
     device_code: body.device_code as string,
@@ -84,7 +85,25 @@ export function parseDeviceReadingPayload(input: unknown): DeviceReadingPayload 
       gyro_z: toNumberOrUndefined(sensors.gyro_z),
       pressure_level: toNumberOrUndefined(sensors.pressure_level),
       touch_count: toNumberOrUndefined(sensors.touch_count),
+      noise_level: toNumberOrUndefined(sensors.noise_level),
+      light_lux: toNumberOrUndefined(sensors.light_lux),
+      brightness: toNumberOrUndefined(sensors.brightness),
     },
+    room: room
+      ? {
+          source: toStringOrUndefined(room.source),
+          connected: typeof room.connected === "boolean" ? room.connected : undefined,
+          updated_at: toStringOrUndefined(room.updated_at),
+          noise_level: toNumberOrUndefined(room.noise_level),
+          light_lux: toNumberOrUndefined(room.light_lux),
+          brightness: toNumberOrUndefined(room.brightness),
+          noise_state: toStringOrUndefined(room.noise_state),
+          light_state: toStringOrUndefined(room.light_state),
+          room_score: toNumberOrUndefined(room.room_score),
+          room_state: toStringOrUndefined(room.room_state),
+          recommendation: toStringOrUndefined(room.recommendation),
+        }
+      : undefined,
   };
 }
 
