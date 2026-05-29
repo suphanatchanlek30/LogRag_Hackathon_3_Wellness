@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HiHome, HiOutlineShoppingBag, HiOutlineClipboardCheck, HiOutlineCog } from "react-icons/hi";
+import { HiOutlineShoppingBag, HiOutlineClipboardCheck, HiOutlineCog } from "react-icons/hi";
 import { MdAutoGraph } from "react-icons/md";
 
 export default function BottomNav() {

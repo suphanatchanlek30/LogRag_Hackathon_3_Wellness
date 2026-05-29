@@ -6,12 +6,10 @@ import Sidebar from "@/components/sidebar/sidebar";
 import MainWrapper from "@/components/layout/main-wrapper";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem("sidebar-collapsed");
-    if (saved) setIsSidebarCollapsed(saved === "1");
-  }, []);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("sidebar-collapsed") === "1";
+  });
 
   useEffect(() => {
     window.localStorage.setItem("sidebar-collapsed", isSidebarCollapsed ? "1" : "0");

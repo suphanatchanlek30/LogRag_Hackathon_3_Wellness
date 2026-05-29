@@ -9,7 +9,6 @@ type FocusSource = "device" | "manual";
 
 const PRESET_MINUTES = [15, 25, 45, 60];
 
-const chartPoints = [34, 46, 70, 25, 75, 86, 42, 63, 72, 28, 81, 70, 30, 50, 61, 44, 37, 61];
 const chartTimes = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00"];
 const emotionLegend = [
   { key: "happy", label: "สนุก", note: "กระตือรือร้น มีความสุข", color: "#f9be16", image: "/dashboard/Fun.png" },
@@ -26,7 +25,7 @@ export default function DashboardMock() {
   const [selectedMin, setSelectedMin] = useState(25);
   const [lastSource, setLastSource] = useState<FocusSource>("manual");
   const [latestDeviceReading, setLatestDeviceReading] = useState<DeviceReadingPayload | null>(null);
-  const [focusScoreHistory, setFocusScoreHistory] = useState<number[]>(chartPoints);
+  const [focusScoreHistory, setFocusScoreHistory] = useState<number[]>([]);
 
   useEffect(() => {
     if (!isLocked || remainingSec <= 0) return;
@@ -45,12 +44,6 @@ export default function DashboardMock() {
     return () => window.clearInterval(timer);
   }, [isLocked, remainingSec]);
 
-  useEffect(() => {
-    const score = latestDeviceReading?.focus?.score;
-    if (typeof score !== "number") return;
-    setFocusScoreHistory((prev) => [...prev.slice(-17), score]);
-  }, [latestDeviceReading]);
-
   const minutes = Math.floor(remainingSec / 60)
     .toString()
     .padStart(2, "0");
@@ -63,6 +56,11 @@ export default function DashboardMock() {
     setRemainingSec(durationSec);
     setIsLocked(true);
     setIsModalOpen(false);
+  }
+
+  function handleLatestReading(reading: DeviceReadingPayload) {
+    setLatestDeviceReading(reading);
+    setFocusScoreHistory((prev) => [...prev.slice(-17), reading.focus.score]);
   }
 
   return (
@@ -85,7 +83,6 @@ export default function DashboardMock() {
               <TopSummaryCard latestDeviceReading={latestDeviceReading} />
               <StartFocusCard
                 onManualStart={() => setIsModalOpen(true)}
-                onMockStart={() => activateFocus(20 * 60, "device")}
               />
             </div>
           </section>
@@ -96,7 +93,7 @@ export default function DashboardMock() {
                 latestDeviceReading={latestDeviceReading}
                 focusScores={focusScoreHistory}
               />
-              <BluetoothPanel onLatestReading={setLatestDeviceReading} />
+              <BluetoothPanel onLatestReading={handleLatestReading} />
 
               <div className="grid gap-2 sm:grid-cols-2">
                 <MetricCard
@@ -145,7 +142,7 @@ export default function DashboardMock() {
                 />
                 <div className="relative flex min-h-[120px] flex-col justify-between gap-2 p-3 sm:flex-row sm:items-end sm:p-4">
                   <div className="w-full sm:max-w-xs rounded-[16px] bg-white/92 p-2.5 sm:p-3 shadow-[0_12px_24px_rgba(72,138,255,0.12)] backdrop-blur-sm">
-                    <div className="text-xl text-sky-300">"</div>
+                    <div className="text-xl text-sky-300">&quot;</div>
                     <p className="-mt-1 text-sm sm:text-base font-medium leading-snug text-slate-800">
                       {getInsightHeadline(latestDeviceReading)}
                     </p>
@@ -257,7 +254,7 @@ function TopSummaryCard({ latestDeviceReading }: { latestDeviceReading?: DeviceR
         <p className="text-xs sm:text-sm font-medium leading-tight text-slate-500">Today Focus Score</p>
         <div className="mt-0.5 flex items-end gap-1">
           <span className="text-base sm:text-xl font-semibold leading-none text-[#28bf41]">
-            {latestDeviceReading?.focus.score ?? 72}
+            {latestDeviceReading?.focus.score ?? "-"}
           </span>
           <span className="text-xs sm:text-sm font-medium text-slate-500">/100</span>
         </div>
@@ -268,10 +265,8 @@ function TopSummaryCard({ latestDeviceReading }: { latestDeviceReading?: DeviceR
 
 function StartFocusCard({
   onManualStart,
-  onMockStart,
 }: {
   onManualStart: () => void;
-  onMockStart: () => void;
 }) {
   return (
     <section className="w-full rounded-[14px] bg-[linear-gradient(135deg,#1fd149_0%,#18b634_55%,#169d2c_100%)] p-[1px] shadow-[0_12px_26px_rgba(34,197,94,0.18)]">
@@ -296,13 +291,9 @@ function StartFocusCard({
             className="ml-auto h-5 w-5 shrink-0 object-contain sm:h-6 sm:w-6"
           />
         </button>
-        <button
-          type="button"
-          onClick={onMockStart}
-          className="mt-1 self-start rounded-full border border-white/30 bg-white/12 px-2 py-0.5 text-[0.65rem] sm:text-[0.7rem] font-medium text-white hover:bg-white/18"
-        >
-          Mock Device Trigger
-        </button>
+        <p className="mt-1 text-[0.65rem] sm:text-[0.7rem] font-medium text-white/82">
+          Live data updates after UNO Q connects
+        </p>
       </div>
     </section>
   );
@@ -318,9 +309,10 @@ function FocusScoreSection({
   const width = 720;
   const height = 300;
   const padding = 34;
-  const stepX = (width - padding * 2) / (focusScores.length - 1);
+  const hasScores = focusScores.length > 0;
+  const stepX = focusScores.length > 1 ? (width - padding * 2) / (focusScores.length - 1) : 0;
   const points = focusScores.map((value, index) => {
-    const x = padding + index * stepX;
+    const x = focusScores.length === 1 ? width / 2 : padding + index * stepX;
     const y = height - padding - (value / 100) * (height - padding * 2);
     return { x, y, value };
   });
@@ -339,7 +331,7 @@ function FocusScoreSection({
           </div>
         </div>
         <div className="rounded-full border border-emerald-100 bg-emerald-50 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold text-[#28bf41] whitespace-nowrap">
-          ↗ AVG {Math.round(focusScores.reduce((acc, cur) => acc + cur, 0) / focusScores.length)}
+          ↗ AVG {hasScores ? Math.round(focusScores.reduce((acc, cur) => acc + cur, 0) / focusScores.length) : "-"}
         </div>
       </div>
 
@@ -366,12 +358,20 @@ function FocusScoreSection({
             );
           })}
 
-          <path d={path} fill="none" stroke="#27b14b" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          {hasScores ? (
+            <path d={path} fill="none" stroke="#27b14b" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          ) : null}
           {points.map((point) => (
             <g key={`${point.x}-${point.y}`}>
               <circle cx={point.x} cy={point.y} r="5.6" fill="#fff" stroke="#27b14b" strokeWidth="3" />
             </g>
           ))}
+
+          {!hasScores ? (
+            <text x={width / 2} y={height / 2} fontSize="18" fill="#64748b" textAnchor="middle">
+              Waiting for UNO Q live data
+            </text>
+          ) : null}
 
           {chartTimes.map((label, index) => (
             <text
