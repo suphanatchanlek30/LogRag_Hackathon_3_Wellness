@@ -19,8 +19,13 @@ type BluetoothState = {
   sendCommand: (command: unknown) => Promise<void>;
 };
 
+type DeviceReadingBatchPayload = {
+  type?: string;
+  readings?: Partial<DeviceReadingPayload>[];
+};
+
 export function useUnoQBluetooth(): BluetoothState {
-  const [isSupported, setIsSupported] = useState(false);
+  const [isSupported, setIsSupported] = useState(getBluetoothSupport);
   const [isConnected, setIsConnected] = useState(false);
   const [deviceName, setDeviceName] = useState("");
   const [latestReading, setLatestReading] = useState<DeviceReadingPayload | null>(null);
@@ -36,13 +41,20 @@ export function useUnoQBluetooth(): BluetoothState {
   const isDisconnectingRef = useRef(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    setIsSupported(Boolean(window.isSecureContext && navigator.bluetooth));
     decoderRef.current = new TextDecoder();
     encoderRef.current = new TextEncoder();
 
     return () => {
-      disconnect();
+      const device = deviceRef.current;
+      const txCharacteristic = txCharacteristicRef.current;
+      const notificationHandler = notificationHandlerRef.current;
+
+      if (txCharacteristic && notificationHandler) {
+        txCharacteristic.removeEventListener("characteristicvaluechanged", notificationHandler);
+      }
+      if (device?.gatt?.connected) {
+        device.gatt.disconnect();
+      }
     };
   }, []);
 
@@ -59,7 +71,7 @@ export function useUnoQBluetooth(): BluetoothState {
     }
 
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: "UNOQ" }],
+      acceptAllDevices: true,
       optionalServices: [SERVICE_UUID],
     });
 
@@ -93,12 +105,15 @@ export function useUnoQBluetooth(): BluetoothState {
           if (!trimmed) continue;
 
           try {
-            const reading = JSON.parse(trimmed) as Partial<DeviceReadingPayload>;
-            if (!isDeviceReadingPayload(reading)) {
+            const parsed = JSON.parse(trimmed) as Partial<DeviceReadingPayload> | DeviceReadingBatchPayload;
+            const readings = getDeviceReadings(parsed);
+            if (readings.length === 0) {
               throw new Error("BLE payload shape ไม่ถูกต้อง");
             }
-            setLatestReading(reading);
-            await postDeviceReading(reading);
+            for (const reading of readings) {
+              setLatestReading(reading);
+              await postDeviceReading(reading);
+            }
             setError("");
           } catch (parseError) {
             setError(parseError instanceof Error ? parseError.message : "อ่านข้อมูล BLE ไม่สำเร็จ");
@@ -196,6 +211,15 @@ export function useUnoQBluetooth(): BluetoothState {
   };
 }
 
+function getBluetoothSupport() {
+  return (
+    typeof window !== "undefined" &&
+    typeof navigator !== "undefined" &&
+    window.isSecureContext &&
+    Boolean(navigator.bluetooth)
+  );
+}
+
 function toBluetoothErrorMessage(error: unknown) {
   const fallback = "เชื่อมต่อ Bluetooth ไม่สำเร็จ";
   if (!(error instanceof Error)) return fallback;
@@ -210,15 +234,41 @@ function toBluetoothErrorMessage(error: unknown) {
   return error.message || fallback;
 }
 
-function isDeviceReadingPayload(value: Partial<DeviceReadingPayload>): value is DeviceReadingPayload {
+function getDeviceReadings(value: unknown): DeviceReadingPayload[] {
+  if (isDeviceReadingPayload(value)) {
+    return [value];
+  }
+
+  if (isDeviceReadingBatchPayload(value)) {
+    return value.readings.filter(isDeviceReadingPayload);
+  }
+
+  return [];
+}
+
+function isDeviceReadingPayload(value: unknown): value is DeviceReadingPayload {
+  const reading = value as Partial<DeviceReadingPayload>;
   return Boolean(
-    value &&
-      typeof value.device_code === "string" &&
-      typeof value.recorded_at === "string" &&
-      value.focus &&
-      typeof value.focus.score === "number" &&
-      typeof value.focus.state === "string" &&
-      value.emotion &&
-      typeof value.emotion.label === "string"
+    reading &&
+      typeof reading.device_code === "string" &&
+      typeof reading.recorded_at === "string" &&
+      reading.focus &&
+      typeof reading.focus.score === "number" &&
+      typeof reading.focus.state === "string" &&
+      reading.emotion &&
+      typeof reading.emotion.label === "string"
+  );
+}
+
+function isDeviceReadingBatchPayload(value: unknown): value is {
+  type?: string;
+  readings: Partial<DeviceReadingPayload>[];
+} {
+  const batch = value as DeviceReadingBatchPayload;
+  return Boolean(
+    batch &&
+      typeof batch === "object" &&
+      Array.isArray(batch.readings) &&
+      (!batch.type || batch.type === "device_reading_batch")
   );
 }
