@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BluetoothPanel from "@/components/dashboard/bluetooth-panel";
 import type { DeviceReadingPayload } from "@/lib/backend/focus-types";
 
@@ -118,11 +118,11 @@ export default function DashboardMock() {
     setIsModalOpen(false);
   }
 
-  function handleLatestReading(reading: DeviceReadingPayload) {
+  const handleLatestReading = useCallback((reading: DeviceReadingPayload) => {
     setLatestDeviceReading(reading);
     setFocusScoreHistory((prev) => [...prev.slice(-17), reading.focus.score]);
     setDbLoaded(true);
-  }
+  }, []);
 
   return (
     <>

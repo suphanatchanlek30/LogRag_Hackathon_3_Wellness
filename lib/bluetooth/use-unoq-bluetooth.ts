@@ -114,7 +114,10 @@ export function useUnoQBluetooth(): BluetoothState {
           setReceivedLines((prev) => prev + 1);
 
           try {
-            const parsed = JSON.parse(trimmed) as unknown;
+            const parsed = parseBleJsonLine(trimmed);
+            if (!parsed) {
+              continue;
+            }
             const readings = getDeviceReadings(parsed);
             if (readings.length === 0) {
               throw new Error("BLE payload shape ไม่ถูกต้อง");
@@ -295,6 +298,25 @@ function unwrapPayload(value: unknown): unknown {
   if (record.data) return record.data;
   if (record.reading) return record.reading;
   return value;
+}
+
+function parseBleJsonLine(line: string): unknown | null {
+  try {
+    return JSON.parse(line) as unknown;
+  } catch {
+    // Some firmware logs prepend counters/tags before JSON, e.g. "1 { ... }".
+    const firstBrace = line.indexOf("{");
+    const lastBrace = line.lastIndexOf("}");
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      const candidate = line.slice(firstBrace, lastBrace + 1).trim();
+      try {
+        return JSON.parse(candidate) as unknown;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
 }
 
 function isDeviceReadingLike(value: unknown): value is Partial<DeviceReadingPayload> {
